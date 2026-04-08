@@ -123,8 +123,8 @@ async function callBEAU(systemPrompt, messages) {
 // ── SUB-COMPONENTS ───────────────────────────────────────────────────
 function BEAUMark({ size = 28 }) {
   return (
-    <div style={{ width: size, height: size, borderRadius: "50%", background: C.sunrise, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: size * 0.48, boxShadow: "0 0 12px rgba(255,120,0,0.35)" }}>
-      🐾
+    <div style={{ width: size, height: size, borderRadius: "50%", background: C.sunrise, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 0 12px rgba(255,120,0,0.35)", overflow: "hidden" }}>
+      <img src="/caduceus.png" alt="B.E.A.U." style={{ width: size * 0.75, height: size * 0.75, objectFit: "contain", filter: "drop-shadow(0 0 2px rgba(0,0,0,0.3))" }} />
     </div>
   );
 }
@@ -438,6 +438,7 @@ export default function BeauHome() {
         <nav style={{ display:"flex", alignItems:"center", padding:"12px 20px", borderBottom:`1px solid ${C.borderSub}`, flexShrink:0 }}>
           <button onClick={() => setSidebarOpen(true)} style={{ background:"none", border:"none", color:C.textMuted, cursor:"pointer", fontSize:19, padding:"4px 8px 4px 0", lineHeight:1, marginRight:8 }}>☰</button>
           <div style={{ display:"flex", alignItems:"center", gap:8, flex:1 }}>
+            <img src="/caduceus.png" alt="" style={{ width:24, height:24, objectFit:"contain" }} />
             <span style={{ fontFamily:"'Lora',serif", fontSize:18, fontWeight:600, background:C.sunrise, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", backgroundClip:"text" }}>B.E.A.U.</span>
             <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:C.textMuted }}>Home Edition</span>
             {intakeDone && petName && <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, padding:"3px 10px", background:`${accent}12`, color:accent, borderRadius:20, fontWeight:600 }}>{species==="dog"?"🐕":"🐈"} {petName}</span>}
@@ -560,7 +561,9 @@ export default function BeauHome() {
           <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:20, padding:"32px 28px", width:"100%", maxWidth:360, position:"relative" }}>
             <button onClick={() => setShowAuth(false)} style={{ position:"absolute", top:16, right:16, background:"none", border:"none", color:C.textMuted, cursor:"pointer", fontSize:19 }}>✕</button>
             <div style={{ textAlign:"center", marginBottom:24 }}>
-              <div style={{ width:52, height:52, borderRadius:"50%", background:C.sunrise, display:"flex", alignItems:"center", justifyContent:"center", fontSize:23, margin:"0 auto 14px", boxShadow:"0 0 20px rgba(255,120,0,.4)" }}>🐾</div>
+              <div style={{ width:52, height:52, borderRadius:"50%", background:C.sunrise, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px", boxShadow:"0 0 20px rgba(255,120,0,.4)", overflow:"hidden" }}>
+                <img src="/caduceus.png" alt="B.E.A.U." style={{ width:36, height:36, objectFit:"contain" }} />
+              </div>
               <div style={{ fontFamily:"'Lora',serif", fontSize:22, fontWeight:600, marginBottom:5 }}>{authMode==="signin"?"Welcome back":"Create account"}</div>
               <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:C.textSub }}>{authMode==="signin"?"Sign in to save plans and track progress":"Save exercises and track your pet's progress"}</div>
             </div>
