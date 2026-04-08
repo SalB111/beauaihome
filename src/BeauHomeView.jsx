@@ -1,140 +1,148 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 
-// ─── Constants ──────────────────────────────────────────────────────────────
+// ─── Color Constants ───────────────────────────────────────────────────────
+const C = {
+  sunrise: "#FF6B35",
+  coral: "#F7931E",
+  gold: "#FFB347",
+  warm: "#FFF4E6",
+  peach: "#FFECD2",
+  sky: "#4ECDC4",
+  teal: "#2AB7CA",
+  navy: "#1A535C",
+  text: "#2D3436",
+  muted: "#636E72",
+  light: "#B2BEC3",
+  bg: "#FFFAF5",
+  card: "#FFFFFF",
+  border: "#F0E6DB",
+};
+
 const API_URL = "/api/chat-home";
 
-const SIDEBAR_TABS = [
-  { key: "plan", label: "Plan", icon: "\ud83d\udccb" },
-  { key: "progress", label: "Progress", icon: "\ud83d\udcc8" },
-  { key: "guide", label: "Guide", icon: "\ud83d\udcd6" },
-  { key: "suggest", label: "Suggest", icon: "\ud83d\udca1" },
+// ─── Breed Lists ───────────────────────────────────────────────────────────
+const DOG_BREEDS = [
+  "Akita","Alaskan Malamute","American Bulldog","American Pit Bull Terrier","American Staffordshire Terrier",
+  "Australian Cattle Dog","Australian Shepherd","Basenji","Basset Hound","Beagle",
+  "Belgian Malinois","Bernese Mountain Dog","Bichon Frise","Border Collie","Boston Terrier",
+  "Boxer","Brittany","Brussels Griffon","Bulldog","Bullmastiff",
+  "Cairn Terrier","Cane Corso","Cavalier King Charles Spaniel","Chihuahua","Chinese Crested",
+  "Cocker Spaniel","Collie","Corgi (Pembroke)","Corgi (Cardigan)","Dachshund",
+  "Dalmatian","Doberman Pinscher","English Setter","English Springer Spaniel","French Bulldog",
+  "German Shepherd","German Shorthaired Pointer","Golden Retriever","Great Dane","Great Pyrenees",
+  "Greyhound","Havanese","Irish Setter","Irish Wolfhound","Italian Greyhound",
+  "Jack Russell Terrier","Labrador Retriever","Lhasa Apso","Maltese","Mastiff",
+  "Miniature Pinscher","Miniature Schnauzer","Newfoundland","Norfolk Terrier","Old English Sheepdog",
+  "Papillon","Pekingese","Pomeranian","Poodle (Standard)","Poodle (Miniature)",
+  "Poodle (Toy)","Portuguese Water Dog","Pug","Rhodesian Ridgeback","Rottweiler",
+  "Saint Bernard","Samoyed","Scottish Terrier","Shetland Sheepdog","Shiba Inu",
+  "Shih Tzu","Siberian Husky","Soft Coated Wheaten Terrier","Staffordshire Bull Terrier","Vizsla",
+  "Weimaraner","West Highland White Terrier","Whippet","Wire Fox Terrier","Yorkshire Terrier",
+  "Mixed Breed / Other",
 ];
 
-const SPECIES_OPTIONS = ["Dog", "Cat"];
-const SIZE_OPTIONS = ["Small (<20 lbs)", "Medium (20\u201350 lbs)", "Large (50\u201390 lbs)", "Giant (90+ lbs)"];
-const CONDITION_OPTIONS = [
-  "Post-TPLO / CCL Surgery",
-  "IVDD (Intervertebral Disc Disease)",
-  "Osteoarthritis",
-  "Hip Dysplasia",
-  "Luxating Patella (post-op)",
-  "Fracture Recovery",
-  "Geriatric Mobility",
-  "Obesity / Weight Management",
-  "General Deconditioning",
-  "Soft Tissue Injury",
-  "Other",
-];
-const MOBILITY_OPTIONS = [
-  "Normal \u2014 moves freely",
-  "Mild \u2014 slight limp, mostly mobile",
-  "Moderate \u2014 noticeable limp, avoids some activity",
-  "Severe \u2014 reluctant to walk, needs support",
-  "Non-ambulatory \u2014 cannot walk unassisted",
-];
-const PAIN_OPTIONS = ["0 \u2014 No pain", "1\u20132 \u2014 Mild", "3\u20134 \u2014 Moderate", "5\u20136 \u2014 Significant", "7\u20138 \u2014 Severe", "9\u201310 \u2014 Extreme"];
-const EQUIPMENT_OPTIONS = [
-  "None",
-  "Cavaletti rails",
-  "Balance disc / wobble board",
-  "Physio ball",
-  "Resistance band",
-  "Ramp / stairs",
-  "Underwater treadmill (clinic access)",
-  "Therapy pool (clinic access)",
+const CAT_BREEDS = [
+  "Abyssinian","American Shorthair","Bengal","Birman","British Shorthair",
+  "Burmese","Devon Rex","Egyptian Mau","Exotic Shorthair","Himalayan",
+  "Maine Coon","Manx","Norwegian Forest Cat","Oriental Shorthair","Persian",
+  "Ragdoll","Russian Blue","Scottish Fold","Siamese","Sphynx",
+  "Tonkinese","Turkish Angora","Mixed Breed / Other",
 ];
 
-const QUICK_REPLIES = [
-  "What exercises should we start with?",
-  "How long should each session be?",
-  "What warning signs should I watch for?",
+const CONDITIONS = [
+  "Post-TPLO","IVDD","Osteoarthritis","Hip Dysplasia","Luxating Patella",
+  "Fracture Recovery","Geriatric Mobility","Sporting/Agility Conditioning",
+  "Muscle Building","General Deconditioning","Obesity/Weight Management","Soft Tissue Injury",
 ];
 
-// ─── Logo ───────────────────────────────────────────────────────────────────
-function LogoIcon({ size = 40 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <rect width="200" height="200" rx="38" fill="#030c18"/>
-      <rect width="200" height="200" rx="38" fill="url(#bgG)" />
-      <defs>
-        <radialGradient id="bgG" cx="50%" cy="52%" r="46%">
-          <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.14"/>
-          <stop offset="100%" stopColor="#020c18" stopOpacity="0"/>
-        </radialGradient>
-        <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#0284c7"/><stop offset="45%" stopColor="#38bdf8"/><stop offset="100%" stopColor="#0284c7"/>
-        </linearGradient>
-        <linearGradient id="snG" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#38bdf8"/><stop offset="100%" stopColor="#0ea5e9"/>
-        </linearGradient>
-      </defs>
-      <rect x="1.5" y="1.5" width="197" height="197" rx="36.5" fill="none" stroke="#0ea5e9" strokeWidth="1.2" strokeOpacity="0.22"/>
-      <path d="M 91 122 C 40 116, 36 80, 109 76" fill="none" stroke="#0369a1" strokeWidth="6" strokeOpacity="0.65" strokeLinecap="round"/>
-      <rect x="95.5" y="24" width="9" height="152" rx="4.5" fill="url(#sG)"/>
-      <circle cx="100" cy="22" r="10" fill="#0ea5e9"/><circle cx="100" cy="22" r="5.5" fill="#030c18"/><circle cx="100" cy="22" r="2.5" fill="#38bdf8"/>
-      <rect x="82" y="172" width="36" height="5.5" rx="2.75" fill="#0ea5e9"/>
-      <path d="M 116 166 C 156 158, 158 118, 91 122" fill="none" stroke="url(#snG)" strokeWidth="6.2" strokeLinecap="round"/>
-      <path d="M 109 76 C 152 68, 152 34, 88 26" fill="none" stroke="url(#snG)" strokeWidth="6.2" strokeLinecap="round"/>
-      <ellipse cx="84" cy="21" rx="15" ry="10" fill="#051828" stroke="#0ea5e9" strokeWidth="2.2" transform="rotate(-28 84 21)"/>
-      <circle cx="77" cy="17" r="3.8" fill="#38bdf8"/><circle cx="77" cy="17" r="1.8" fill="#010810"/>
-      <path d="M 69 24 C 63 21, 59 19, 55 17" fill="none" stroke="#0ea5e9" strokeWidth="1.6" strokeLinecap="round"/>
-      <path d="M 69 24 C 63 25, 59 27, 55 30" fill="none" stroke="#0ea5e9" strokeWidth="1.6" strokeLinecap="round"/>
-    </svg>
-  );
-}
+const SAMPLE_QUESTIONS = [
+  "What exercises can I do with my pet after TPLO surgery?",
+  "My dog is 12 years old with arthritis, what can I do at home?",
+  "I have a couch, some pillows, and stairs \u2014 what exercises can we do?",
+  "Create an outdoor exercise course for my dog using my backyard",
+  "Beach exercises for post-surgery recovery",
+  "My cat had surgery 2 weeks ago, what gentle exercises can I do?",
+  "Muscle building exercises for my agility dog",
+  "Zig-zag walking \u2014 how does it help?",
+];
 
-// ─── System Prompt Builder ──────────────────────────────────────────────────
-function buildSystemPrompt(intake) {
-  const {
-    petName, species, breed, age, weight, size,
-    condition, conditionOther, surgery, surgeryDate, surgeryWeeksAgo,
-    mobility, painLevel, vetName, medications,
-    equipment, goals, additionalNotes,
-  } = intake;
+// ─── Logo Component ────────────────────────────────────────────────────────
+const LogoIcon = ({ size = 40 }) => (
+  <svg width={size} height={size} viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <rect width="200" height="200" rx="38" fill="#1A535C"/>
+    <defs>
+      <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stopColor="#FF6B35"/><stop offset="45%" stopColor="#FFB347"/><stop offset="100%" stopColor="#FF6B35"/>
+      </linearGradient>
+      <linearGradient id="snG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#FFB347"/><stop offset="100%" stopColor="#FF6B35"/>
+      </linearGradient>
+    </defs>
+    <rect x="1.5" y="1.5" width="197" height="197" rx="36.5" fill="none" stroke="#FF6B35" strokeWidth="1.2" strokeOpacity="0.3"/>
+    <path d="M 91 122 C 40 116, 36 80, 109 76" fill="none" stroke="#C44D1A" strokeWidth="6" strokeOpacity="0.5" strokeLinecap="round"/>
+    <rect x="95.5" y="24" width="9" height="152" rx="4.5" fill="url(#sG)"/>
+    <circle cx="100" cy="22" r="10" fill="#FF6B35"/><circle cx="100" cy="22" r="5.5" fill="#1A535C"/><circle cx="100" cy="22" r="2.5" fill="#FFB347"/>
+    <rect x="82" y="172" width="36" height="5.5" rx="2.75" fill="#FF6B35"/>
+    <path d="M 116 166 C 156 158, 158 118, 91 122" fill="none" stroke="url(#snG)" strokeWidth="6.2" strokeLinecap="round"/>
+    <path d="M 109 76 C 152 68, 152 34, 88 26" fill="none" stroke="url(#snG)" strokeWidth="6.2" strokeLinecap="round"/>
+    <ellipse cx="84" cy="21" rx="15" ry="10" fill="#0F3D45" stroke="#FF6B35" strokeWidth="2.2" transform="rotate(-28 84 21)"/>
+    <circle cx="77" cy="17" r="3.8" fill="#FFB347"/><circle cx="77" cy="17" r="1.8" fill="#0F3D45"/>
+    <path d="M 69 24 C 63 21, 59 19, 55 17" fill="none" stroke="#FF6B35" strokeWidth="1.6" strokeLinecap="round"/>
+    <path d="M 69 24 C 63 25, 59 27, 55 30" fill="none" stroke="#FF6B35" strokeWidth="1.6" strokeLinecap="round"/>
+  </svg>
+);
 
-  const conditionText = condition === "Other" ? conditionOther : condition;
-  const surgeryInfo = surgery
-    ? `Surgery: Yes \u2014 ${surgeryDate ? `Date: ${surgeryDate}` : "date not provided"}${surgeryWeeksAgo ? `, approximately ${surgeryWeeksAgo} weeks ago` : ""}.`
-    : "Surgery: No recent surgery reported.";
-  const equipmentList = (equipment || []).filter(Boolean).join(", ") || "None specified";
-  const goalsList = goals || "General recovery and improved mobility";
-
+// ─── System Prompt Builder ─────────────────────────────────────────────────
+function buildSystemPrompt(pet) {
   return `You are B.E.A.U. (Biomedical Evidence-Based Assessment Utility) \u2014 Home Edition.
 
-You are a warm, knowledgeable, and encouraging virtual rehabilitation guide for pet owners managing their pet's recovery at home. You were created by Salvatore Bonanno, a Certified Canine Rehabilitation Nurse with 30 years of veterinary experience.
+Created by Salvatore Bonanno, CCRN, with 30 years of veterinary rehabilitation experience. Your knowledge base follows the clinical protocols from Millis & Levine's "Canine Rehabilitation and Physical Therapy" and the K9 Rehab Pro document of truth.
 
-IMPORTANT SCOPE RULES \u2014 you MUST follow these:
-- You are a HOME REHABILITATION GUIDE, not a veterinarian.
-- You NEVER diagnose conditions, prescribe medications, or replace veterinary care.
-- You provide gentle at-home exercises, lifestyle modifications, and recovery guidance.
-- If the owner describes symptoms that suggest an emergency (sudden paralysis, uncontrolled bleeding, seizures, respiratory distress, extreme pain), you MUST tell them to contact their veterinarian or emergency clinic IMMEDIATELY and stop providing exercise guidance.
-- If pain is reported as 7+ out of 10, advise the owner to consult their veterinarian before continuing exercises.
-- Always remind the owner that your suggestions should be confirmed by their veterinarian.
+CRITICAL SPECIES RULE:
+- If the patient is a DOG, ONLY give canine-specific exercises and protocols.
+- If the patient is a CAT, ONLY give feline-specific exercises and protocols.
+- NEVER mix species protocols. Cat anatomy, recovery patterns, and exercise tolerances are fundamentally different from dogs.
 
-PATIENT PROFILE:
-- Name: ${petName || "Not provided"}
-- Species: ${species || "Dog"}
-- Breed: ${breed || "Not specified"}
-- Age: ${age || "Unknown"}
-- Weight: ${weight || "Unknown"}${size ? ` (${size})` : ""}
-- Condition: ${conditionText || "Not specified"}
-- ${surgeryInfo}
-- Current Mobility: ${mobility || "Not assessed"}
-- Pain Level: ${painLevel || "Not assessed"}
-- Veterinarian: ${vetName || "Not specified"}
-- Current Medications: ${medications || "None reported"}
-- Available Equipment: ${equipmentList}
-- Owner Goals: ${goalsList}
-- Additional Notes: ${additionalNotes || "None"}
+YOUR PURPOSE:
+You help pet parents who cannot afford professional rehabilitation centers. You provide evidence-based, safe, at-home exercises using common household items and outdoor environments.
+
+WHAT YOU DO:
+- Generate exercise protocols for: post-surgical recovery (TPLO, IVDD, luxating patella, fractures), osteoarthritis, hip dysplasia, geriatric mobility, sporting/agility conditioning, muscle building, weight management, general deconditioning
+- Use REAL household items: pillows, couch cushions, stairs, ramps, towels, broomsticks, chairs, yoga mats, carpet vs hardwood differences
+- Outdoor exercises: zig-zag walking (stabilizer muscles), sand walking (full-body workout), hill walking, curb step-ups, figure-8 patterns around trees, cavaletti with sticks/brooms
+- Create full exercise courses: indoor courses using furniture, outdoor courses using yard/park features
+- Progressive protocols: start gentle, build over weeks, track progression
+- Fun exercises: make rehab enjoyable for both pet and owner
+
+EXERCISE ACCURACY RULES:
+- Every exercise must be evidence-based \u2014 traceable to Millis & Levine or established veterinary rehabilitation literature
+- When asked "what do you have at home?" \u2014 use ONLY what they list. Never suggest items they don't have.
+- Include: exercise name, target muscles/joints, duration, repetitions, frequency, difficulty level, safety cues
+- Tag exercises as INDOOR or OUTDOOR
+- Note if exercise needs supervision
+
+SAFETY RULES:
+- If pain >= 7/10, advise veterinary consultation before continuing
+- Post-surgical: always ask how many weeks post-op before recommending
+- Never diagnose, never prescribe medication
+- Always include "when to stop" cues for each exercise
+- Emergency signs \u2192 tell them to contact their vet IMMEDIATELY
 
 COMMUNICATION STYLE:
-- Speak warmly and encouragingly, like a trusted rehabilitation nurse talking to a pet parent.
-- Use plain language \u2014 avoid heavy medical jargon unless asked.
-- Be specific with exercises: describe body position, duration, repetitions, and frequency.
-- Organize responses with clear sections and bullet points when listing exercises.
-- Always include safety cues (what to watch for, when to stop).
-- When suggesting exercises, note the difficulty level (gentle / moderate / active).
-- Celebrate small wins and encourage consistency.
+- Warm, encouraging, like a trusted friend who happens to be a rehab expert
+- Use plain language, no heavy jargon
+- Celebrate progress, motivate consistency
+- Use emojis sparingly but warmly
+- Structure exercises clearly with bullet points
+- Always end with encouragement
+
+PATIENT PROFILE:
+- Name: ${pet.name || "Not provided"}
+- Species: ${pet.species || "Dog"}
+- Breed: ${pet.breed || "Not specified"}
+- Age: ${pet.age || "Unknown"}
+- Weight: ${pet.weight || "Unknown"}
+- Condition: ${pet.condition || "Not specified"}
 
 RESPONSE STRUCTURE (when providing exercise plans):
 1. Warm greeting referencing the pet by name
@@ -146,765 +154,704 @@ RESPONSE STRUCTURE (when providing exercise plans):
 If this is the first message, introduce yourself warmly, acknowledge the patient profile, and ask if the owner is ready to get started with a home exercise plan.`;
 }
 
-// ─── Progress Dots ──────────────────────────────────────────────────────────
-function ProgressDots({ current, total }) {
-  return (
-    <div className="flex items-center justify-center gap-2 mb-6">
-      {Array.from({ length: total }, (_, i) => (
-        <div
-          key={i}
-          className="rounded-full transition-all duration-300"
-          style={{
-            width: i === current ? 32 : 8,
-            height: 8,
-            background: i === current
-              ? "linear-gradient(90deg, #0EA5E9, #10B981)"
-              : i < current ? "#0EA5E9" : "rgba(255,255,255,0.15)",
-          }}
-        />
-      ))}
-    </div>
-  );
+// ─── Markdown-lite renderer ────────────────────────────────────────────────
+function renderMessageText(text) {
+  if (!text) return null;
+  const lines = text.split("\n");
+  const elements = [];
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (line.startsWith("### ")) {
+      elements.push(<h4 key={i} style={{ fontWeight: 700, fontSize: 15, margin: "12px 0 4px", color: C.navy }}>{line.slice(4)}</h4>);
+    } else if (line.startsWith("## ")) {
+      elements.push(<h3 key={i} style={{ fontWeight: 700, fontSize: 16, margin: "14px 0 6px", color: C.navy }}>{line.slice(3)}</h3>);
+    } else if (line.startsWith("**") && line.endsWith("**")) {
+      elements.push(<p key={i} style={{ fontWeight: 700, margin: "10px 0 2px" }}>{line.slice(2, -2)}</p>);
+    } else if (line.startsWith("- ") || line.startsWith("* ")) {
+      elements.push(
+        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 2, paddingLeft: 4 }}>
+          <span style={{ color: C.sunrise, flexShrink: 0 }}>{"\u2022"}</span>
+          <span>{formatInline(line.slice(2))}</span>
+        </div>
+      );
+    } else if (/^\d+\.\s/.test(line)) {
+      const num = line.match(/^(\d+)\.\s/)[1];
+      elements.push(
+        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 2, paddingLeft: 4 }}>
+          <span style={{ color: C.sunrise, fontWeight: 600, flexShrink: 0 }}>{num}.</span>
+          <span>{formatInline(line.replace(/^\d+\.\s/, ""))}</span>
+        </div>
+      );
+    } else if (line.trim() === "") {
+      elements.push(<div key={i} style={{ height: 8 }} />);
+    } else {
+      elements.push(<p key={i} style={{ margin: "2px 0" }}>{formatInline(line)}</p>);
+    }
+    i++;
+  }
+  return elements;
 }
 
-// ─── Auth Modal ─────────────────────────────────────────────────────────────
-function AuthModal({ mode, onClose, onSwitch, onAuth }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [error, setError] = useState("");
-
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (!email || !password) { setError("Email and password are required."); return; }
-    if (mode === "signup" && !name) { setError("Name is required."); return; }
-    onAuth({ email, name: name || email.split("@")[0], mode });
-  }
-
-  const inputCls = "w-full rounded-xl px-4 py-3 text-sm outline-none bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-sky-400 focus:ring-1 focus:ring-sky-400/30 transition-all";
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md fade-in">
-      <div className="glass-light rounded-2xl shadow-2xl w-full max-w-md p-8 relative slide-up">
-        <button onClick={onClose} className="absolute top-4 right-4 text-xl text-gray-400 hover:text-gray-600 transition-colors">
-          &times;
-        </button>
-        <div className="flex items-center gap-3 mb-6">
-          <LogoIcon size={36} />
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">
-              {mode === "login" ? "Welcome Back" : "Create Account"}
-            </h2>
-            <p className="text-xs text-gray-500">
-              {mode === "login" ? "Sign in to save your pet's progress" : "Join B.E.A.U. Home to track recovery"}
-            </p>
-          </div>
-        </div>
-        {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === "signup" && (
-            <div>
-              <label className="block text-sm font-medium mb-1.5 text-gray-700">Your Name</label>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-xl px-4 py-3 text-sm outline-none border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-sky-400 focus:ring-1 focus:ring-sky-400/30 transition-all"
-                placeholder="Your name" />
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium mb-1.5 text-gray-700">Email</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-sky-400 focus:ring-1 focus:ring-sky-400/30 transition-all"
-              placeholder="you@example.com" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1.5 text-gray-700">Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-xl px-4 py-3 text-sm outline-none border border-gray-200 text-gray-900 placeholder-gray-400 focus:border-sky-400 focus:ring-1 focus:ring-sky-400/30 transition-all"
-              placeholder="\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022" />
-          </div>
-          <button type="submit"
-            className="w-full text-white font-semibold py-3 rounded-xl transition-all hover:shadow-lg hover:shadow-sky-500/20"
-            style={{ background: "linear-gradient(135deg, #0EA5E9, #10B981)" }}>
-            {mode === "login" ? "Sign In" : "Create Account"}
-          </button>
-        </form>
-        <p className="text-center text-sm mt-5 text-gray-500">
-          {mode === "login" ? "Don't have an account? " : "Already have an account? "}
-          <button onClick={onSwitch} className="font-medium hover:underline" style={{ color: "#0EA5E9" }}>
-            {mode === "login" ? "Sign Up" : "Sign In"}
-          </button>
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ─── Sidebar Panel ──────────────────────────────────────────────────────────
-function SidebarPanel({ activeTab, intake, messages, onSuggest }) {
-  const petName = intake?.petName || "your pet";
-
-  if (activeTab === "plan") {
-    return (
-      <div className="p-5 space-y-4">
-        <h3 className="font-bold text-sm text-white/90">Recovery Plan</h3>
-        {intake?.condition ? (
-          <div className="space-y-3">
-            <div className="glass rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#0EA5E9" }}>Patient</p>
-              <p className="text-sm font-semibold text-white">{petName}</p>
-              <p className="text-xs mt-0.5 text-white/50">{intake.breed || intake.species} &middot; {intake.age || "Age unknown"}</p>
-            </div>
-            <div className="glass rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#10B981" }}>Condition</p>
-              <p className="text-sm text-white/80">{intake.condition === "Other" ? intake.conditionOther : intake.condition}</p>
-            </div>
-            <div className="glass rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: "#F59E0B" }}>Phase</p>
-              <p className="text-sm text-white/80">Home Recovery &mdash; Active</p>
-            </div>
-            {intake.mobility && (
-              <div className="glass rounded-xl p-4">
-                <p className="text-[10px] font-bold uppercase tracking-wider mb-1 text-white/40">Mobility</p>
-                <p className="text-sm text-white/80">{intake.mobility}</p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <p className="text-sm text-white/40">Complete the intake form to generate a plan.</p>
-        )}
-      </div>
-    );
-  }
-
-  if (activeTab === "progress") {
-    const questionCount = messages.filter((m) => m.role === "user").length;
-    const responseCount = messages.filter((m) => m.role === "assistant").length;
-    return (
-      <div className="p-5 space-y-4">
-        <h3 className="font-bold text-sm text-white/90">Progress</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="glass rounded-xl p-4 text-center">
-            <p className="text-2xl font-extrabold" style={{ color: "#0EA5E9", textShadow: "0 0 20px rgba(14,165,233,0.3)" }}>{questionCount}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-wider mt-1 text-white/40">Questions</p>
-          </div>
-          <div className="glass rounded-xl p-4 text-center">
-            <p className="text-2xl font-extrabold" style={{ color: "#10B981", textShadow: "0 0 20px rgba(16,185,129,0.3)" }}>{responseCount}</p>
-            <p className="text-[10px] font-semibold uppercase tracking-wider mt-1 text-white/40">Responses</p>
-          </div>
-        </div>
-        <div className="glass rounded-xl p-4">
-          <p className="text-xs text-white/40">
-            Sign in to save progress across sessions and track {petName}'s recovery over time.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (activeTab === "guide") {
-    const tips = [
-      { icon: "\ud83d\udc3e", title: "Getting Started", desc: "Ask B.E.A.U. for a daily exercise plan based on your pet's condition." },
-      { icon: "\u23f1\ufe0f", title: "Session Length", desc: "Start with 5\u201310 minute sessions. Gradually increase as your pet builds stamina." },
-      { icon: "\ud83d\udc40", title: "Watch For", desc: "Limping, whining, panting, or reluctance to continue means it's time to stop." },
-      { icon: "\ud83d\udea8", title: "Call Your Vet", desc: "For sudden changes, worsening symptoms, or any concerns \u2014 always consult your vet." },
-    ];
-    return (
-      <div className="p-5 space-y-4">
-        <h3 className="font-bold text-sm text-white/90">Quick Guide</h3>
-        <div className="space-y-3">
-          {tips.map((t, i) => (
-            <div key={i} className="glass rounded-xl p-3 flex gap-3">
-              <span className="text-xl flex-shrink-0">{t.icon}</span>
-              <div>
-                <p className="text-sm font-semibold text-white/90">{t.title}</p>
-                <p className="text-xs mt-0.5 text-white/50">{t.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  if (activeTab === "suggest") {
-    const suggestions = [
-      `What gentle exercises can I do with ${petName} today?`,
-      `How do I know if ${petName} is in too much pain to exercise?`,
-      `Can you give me a weekly schedule for ${petName}?`,
-      `What signs of improvement should I look for?`,
-      `How should I modify exercises if ${petName} seems tired?`,
-      `What warm-up should I do before exercises?`,
-    ];
-    return (
-      <div className="p-5 space-y-4">
-        <h3 className="font-bold text-sm text-white/90">Suggested Questions</h3>
-        <div className="space-y-2">
-          {suggestions.map((s, i) => (
-            <button key={i} onClick={() => onSuggest(s)}
-              className="w-full text-left text-sm px-4 py-3 rounded-xl transition-all glass hover:border-sky-400/30 text-white/70 hover:text-white">
-              {s}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  return null;
-}
-
-// ─── Main Component ─────────────────────────────────────────────────────────
-export default function BeauHomeView() {
-  const [step, setStep] = useState(0);
-  const [form, setForm] = useState({
-    petName: "", species: "Dog", breed: "", age: "", weight: "", size: "",
-    condition: "", conditionOther: "", surgery: false, surgeryDate: "", surgeryWeeksAgo: "",
-    mobility: "", painLevel: "", vetName: "", medications: "",
-    equipment: [], goals: "", additionalNotes: "",
+function formatInline(text) {
+  // Bold
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    return part;
   });
-  const [intake, setIntake] = useState(null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+export default function BeauHomeView() {
+  // App state: "splash" | "auth" | "chat"
+  const [screen, setScreen] = useState("splash");
+  const [authTab, setAuthTab] = useState("signin"); // "signin" | "create"
+  const [user, setUser] = useState(() => {
+    try { const u = localStorage.getItem("beau_user"); return u ? JSON.parse(u) : null; } catch { return null; }
+  });
+
+  // Auth form
+  const [authName, setAuthName] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPass, setAuthPass] = useState("");
+  const [authError, setAuthError] = useState("");
+
+  // Pet info
+  const [petInfoOpen, setPetInfoOpen] = useState(true);
+  const [pet, setPet] = useState({ species: "dog", breed: "", name: "", age: "", weight: "", condition: "" });
+  const [sessionStarted, setSessionStarted] = useState(false);
+
+  // Chat
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState("plan");
-  const [showAuth, setShowAuth] = useState(null);
-  const [user, setUser] = useState(null);
-  const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const [savedExercises, setSavedExercises] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [helpOpen, setHelpOpen] = useState(false);
+
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Scroll chat to bottom
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
-  useEffect(() => { if (intake && inputRef.current) inputRef.current.focus(); }, [intake]);
 
-  function updateForm(field, value) { setForm((p) => ({ ...p, [field]: value })); }
-  function toggleEquipment(item) {
-    setForm((p) => ({ ...p, equipment: p.equipment.includes(item) ? p.equipment.filter((e) => e !== item) : [...p.equipment, item] }));
+  // Auto-focus input after session starts
+  useEffect(() => { if (sessionStarted && inputRef.current) inputRef.current.focus(); }, [sessionStarted]);
+
+  // Restore user from localStorage on mount
+  useEffect(() => {
+    if (user) setScreen("chat");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Auth handlers ────────────────────────────────────────────
+  function handleAuthSubmit(e) {
+    e.preventDefault();
+    setAuthError("");
+    if (!authEmail.trim() || !authPass.trim()) { setAuthError("Email and password are required."); return; }
+    if (authTab === "create" && !authName.trim()) { setAuthError("Name is required."); return; }
+    const userData = { name: authTab === "create" ? authName.trim() : authEmail.split("@")[0], email: authEmail.trim() };
+    localStorage.setItem("beau_user", JSON.stringify(userData));
+    setUser(userData);
+    setScreen("chat");
+    setAuthError("");
   }
 
-  function canAdvance() {
-    if (step === 1) return form.petName.trim().length > 0;
-    return true;
+  function handleSignOut() {
+    localStorage.removeItem("beau_user");
+    setUser(null);
+    setSessionStarted(false);
+    setMessages([]);
+    setPet({ species: "dog", breed: "", name: "", age: "", weight: "", condition: "" });
+    setPetInfoOpen(true);
+    setSavedExercises([]);
+    setScreen("splash");
   }
+
+  // ─── Pet / Chat handlers ──────────────────────────────────────
+  function updatePet(field, value) { setPet(p => ({ ...p, [field]: value })); }
 
   const handleStartSession = useCallback(async () => {
-    setIntake(form);
-    const systemPrompt = buildSystemPrompt(form);
-    const initialMessages = [{ role: "user", content: `Hi B.E.A.U.! I just filled out ${form.petName}'s intake form. Can you introduce yourself and help us get started?` }];
-    setMessages([{ role: "user", text: initialMessages[0].content }]);
+    if (!pet.name.trim()) return;
+    setSessionStarted(true);
+    setPetInfoOpen(false);
+    const systemPrompt = buildSystemPrompt(pet);
+    const firstMsg = [{ role: "user", content: `Hi B.E.A.U.! I'm here with ${pet.name}. Can you introduce yourself and help us get started?` }];
+    setMessages([{ role: "user", text: firstMsg[0].content }]);
     setLoading(true);
-    setShowQuickReplies(false);
     try {
       const res = await fetch(API_URL, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: initialMessages, systemPrompt }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: firstMsg, systemPrompt }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setMessages((prev) => [...prev, { role: "assistant", text: data.text }]);
-      setShowQuickReplies(true);
+      setMessages(prev => [...prev, { role: "assistant", text: data.text }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", text: "I'm sorry \u2014 I'm having trouble connecting right now. Please try again in a moment." }]);
+      setMessages(prev => [...prev, { role: "assistant", text: "I'm sorry \u2014 I'm having trouble connecting right now. Please try again in a moment." }]);
     } finally { setLoading(false); }
-  }, [form]);
+  }, [pet]);
 
   async function handleSend(e) {
     e?.preventDefault();
     const trimmed = input.trim();
     if (!trimmed || loading) return;
-    setShowQuickReplies(false);
     const userMsg = { role: "user", text: trimmed };
     const updated = [...messages, userMsg];
     setMessages(updated);
     setInput("");
     setLoading(true);
-    const apiMessages = updated.map((m) => ({ role: m.role, content: m.text }));
+    const apiMessages = updated.map(m => ({ role: m.role, content: m.text }));
     try {
       const res = await fetch(API_URL, {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages, systemPrompt: buildSystemPrompt(intake) }),
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: apiMessages, systemPrompt: buildSystemPrompt(pet) }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      setMessages((prev) => [...prev, { role: "assistant", text: data.text }]);
+      setMessages(prev => [...prev, { role: "assistant", text: data.text }]);
     } catch {
-      setMessages((prev) => [...prev, { role: "assistant", text: "I'm sorry \u2014 something went wrong. Please try again." }]);
+      setMessages(prev => [...prev, { role: "assistant", text: "I'm sorry \u2014 something went wrong. Please try again." }]);
     } finally { setLoading(false); }
   }
 
-  function handleSuggest(text) { setInput(text); inputRef.current?.focus(); }
-  function handleAuth({ email, name }) { setUser({ email, name }); setShowAuth(null); }
-
-  function handleNewSession() {
-    setIntake(null);
-    setMessages([]);
-    setStep(0);
-    setForm({
-      petName: "", species: "Dog", breed: "", age: "", weight: "", size: "",
-      condition: "", conditionOther: "", surgery: false, surgeryDate: "", surgeryWeeksAgo: "",
-      mobility: "", painLevel: "", vetName: "", medications: "",
-      equipment: [], goals: "", additionalNotes: "",
-    });
-    setShowQuickReplies(false);
+  function handleQuickAction(action, msgIndex) {
+    if (action === "save") {
+      const msg = messages[msgIndex];
+      if (msg) setSavedExercises(prev => [...prev, { text: msg.text.slice(0, 120) + "...", savedAt: new Date().toLocaleTimeString() }]);
+    } else if (action === "another") {
+      setInput("Show me another option");
+      inputRef.current?.focus();
+    } else if (action === "easier") {
+      setInput("Make it easier");
+      inputRef.current?.focus();
+    }
   }
 
-  // Shared styles
-  const inputCls = "w-full rounded-xl px-4 py-3 text-sm outline-none bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-sky-400/50 focus:ring-1 focus:ring-sky-400/20 transition-all";
-  const labelCls = "block text-sm font-semibold mb-1.5 text-white/70";
+  function handleNewChat() {
+    setMessages([]);
+    setSessionStarted(false);
+    setPetInfoOpen(true);
+    setPet({ species: "dog", breed: "", name: "", age: "", weight: "", condition: "" });
+  }
 
-  // ─── INTAKE: Multi-Step Wizard ─────────────────────────────────
-  if (!intake) {
+  function handleSampleQuestion(q) {
+    setInput(q);
+    inputRef.current?.focus();
+  }
+
+  const breeds = pet.species === "dog" ? DOG_BREEDS : CAT_BREEDS;
+  const speciesEmoji = pet.species === "dog" ? "\uD83D\uDC15" : "\uD83D\uDC31";
+
+  // ═════════════════════════════════════════════════════════════════
+  //  SCREEN 1: SPLASH
+  // ═════════════════════════════════════════════════════════════════
+  if (screen === "splash") {
     return (
-      <div className="min-h-screen mesh-bg flex flex-col">
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="flex items-center gap-2 opacity-60">
-            <LogoIcon size={24} />
-            <span className="text-xs font-medium text-white/50">B.E.A.U. Home</span>
-          </div>
-          {user ? (
-            <span className="text-sm text-white/50">Hi, <strong className="text-white/80">{user.name}</strong></span>
-          ) : (
-            <div className="flex items-center gap-3">
-              <button onClick={() => setShowAuth("login")} className="text-sm font-medium hover:underline" style={{ color: "#0EA5E9" }}>Sign In</button>
-              <button onClick={() => setShowAuth("signup")} className="text-sm text-white px-4 py-1.5 rounded-lg transition-all hover:shadow-lg hover:shadow-sky-500/20" style={{ background: "linear-gradient(135deg, #0EA5E9, #0F4C81)" }}>Sign Up</button>
-            </div>
-          )}
+      <div className="mesh-warm fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div style={{ filter: "drop-shadow(0 0 60px rgba(255,107,53,0.2))", marginBottom: 32 }}>
+          <LogoIcon size={120} />
         </div>
-
-        {/* Wizard Content */}
-        <div className="flex-1 flex items-center justify-center px-4 py-8">
-
-          {/* Step 0: Hero */}
-          {step === 0 && (
-            <div className="text-center fade-in max-w-lg">
-              <div className="inline-block mb-8" style={{ filter: "drop-shadow(0 0 40px rgba(14,165,233,0.25))" }}>
-                <LogoIcon size={120} />
-              </div>
-              <h1 className="text-5xl font-bold tracking-tight text-white mb-3" style={{ fontFamily: "'DM Sans', sans-serif" }}>
-                B.E.A.U. Home
-              </h1>
-              <p className="text-lg text-white/60 mb-2">AI-Powered Pet Rehabilitation Guide</p>
-              <p className="text-sm text-white/30 mb-10">Powered by 30 years of clinical expertise</p>
-              <button
-                onClick={() => setStep(1)}
-                className="px-10 py-4 rounded-2xl text-white font-semibold text-lg transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background: "linear-gradient(135deg, #0EA5E9, #10B981)",
-                  boxShadow: "0 0 40px rgba(14,165,233,0.25), 0 4px 20px rgba(0,0,0,0.3)",
-                }}>
-                Get Started
-              </button>
-              <p className="text-xs text-white/20 mt-8">
-                B.E.A.U. Home is a rehabilitation guide &mdash; not a substitute for veterinary care.
-              </p>
-            </div>
-          )}
-
-          {/* Step 1: Pet Info */}
-          {step === 1 && (
-            <div className="w-full max-w-xl slide-up">
-              <ProgressDots current={0} total={4} />
-              <div className="glass rounded-2xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <LogoIcon size={32} />
-                  <div>
-                    <h2 className="text-xl font-bold text-white">Tell us about your pet</h2>
-                    <p className="text-xs text-white/40">Step 1 of 4</p>
-                  </div>
-                </div>
-                <div className="space-y-5">
-                  <div>
-                    <label className={labelCls}>Pet Name <span className="text-red-400">*</span></label>
-                    <input className={inputCls} value={form.petName} onChange={(e) => updateForm("petName", e.target.value)} placeholder="e.g. Beau" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelCls}>Species</label>
-                      <select className={inputCls} value={form.species} onChange={(e) => updateForm("species", e.target.value)}>
-                        {SPECIES_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className={labelCls}>Breed</label>
-                      <input className={inputCls} value={form.breed} onChange={(e) => updateForm("breed", e.target.value)} placeholder="e.g. Golden Retriever" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <label className={labelCls}>Age</label>
-                      <input className={inputCls} value={form.age} onChange={(e) => updateForm("age", e.target.value)} placeholder="e.g. 7 years" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Weight</label>
-                      <input className={inputCls} value={form.weight} onChange={(e) => updateForm("weight", e.target.value)} placeholder="e.g. 65 lbs" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Size</label>
-                      <select className={inputCls} value={form.size} onChange={(e) => updateForm("size", e.target.value)}>
-                        <option value="">Select...</option>
-                        {SIZE_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-8">
-                  <button onClick={() => setStep(0)} className="px-6 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white/70 transition-colors">
-                    Back
-                  </button>
-                  <button
-                    onClick={() => canAdvance() && setStep(2)}
-                    disabled={!canAdvance()}
-                    className="px-8 py-2.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-sky-500/20"
-                    style={{ background: "linear-gradient(135deg, #0EA5E9, #10B981)" }}>
-                    Next
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Condition */}
-          {step === 2 && (
-            <div className="w-full max-w-xl slide-up">
-              <ProgressDots current={1} total={4} />
-              <div className="glass rounded-2xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <LogoIcon size={32} />
-                  <div>
-                    <h2 className="text-xl font-bold text-white">What's the condition?</h2>
-                    <p className="text-xs text-white/40">Step 2 of 4</p>
-                  </div>
-                </div>
-                <div className="space-y-5">
-                  <div>
-                    <label className={labelCls}>Primary Condition</label>
-                    <select className={inputCls} value={form.condition} onChange={(e) => updateForm("condition", e.target.value)}>
-                      <option value="">Select condition...</option>
-                      {CONDITION_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-                    </select>
-                    {form.condition === "Other" && (
-                      <input className={`${inputCls} mt-3`} value={form.conditionOther} onChange={(e) => updateForm("conditionOther", e.target.value)} placeholder="Describe the condition..." />
-                    )}
-                  </div>
-                  <div className="space-y-3">
-                    <label className="flex items-center gap-2.5 text-sm font-semibold cursor-pointer text-white/70">
-                      <input type="checkbox" checked={form.surgery} onChange={(e) => updateForm("surgery", e.target.checked)} className="rounded w-4 h-4 accent-sky-500" />
-                      Recent surgery
-                    </label>
-                    {form.surgery && (
-                      <div className="grid grid-cols-2 gap-4 pl-7">
-                        <div>
-                          <label className={labelCls}>Surgery Date</label>
-                          <input type="date" className={inputCls} value={form.surgeryDate} onChange={(e) => updateForm("surgeryDate", e.target.value)} />
-                        </div>
-                        <div>
-                          <label className={labelCls}>Weeks Since Surgery</label>
-                          <input type="number" className={inputCls} value={form.surgeryWeeksAgo} onChange={(e) => updateForm("surgeryWeeksAgo", e.target.value)} placeholder="e.g. 4" />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelCls}>Current Mobility</label>
-                      <select className={inputCls} value={form.mobility} onChange={(e) => updateForm("mobility", e.target.value)}>
-                        <option value="">Select...</option>
-                        {MOBILITY_OPTIONS.map((m) => <option key={m} value={m}>{m}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className={labelCls}>Pain Level</label>
-                      <select className={inputCls} value={form.painLevel} onChange={(e) => updateForm("painLevel", e.target.value)}>
-                        <option value="">Select...</option>
-                        {PAIN_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-between mt-8">
-                  <button onClick={() => setStep(1)} className="px-6 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white/70 transition-colors">Back</button>
-                  <button onClick={() => setStep(3)} className="px-8 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-sky-500/20" style={{ background: "linear-gradient(135deg, #0EA5E9, #10B981)" }}>Next</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Setup */}
-          {step === 3 && (
-            <div className="w-full max-w-xl slide-up">
-              <ProgressDots current={2} total={4} />
-              <div className="glass rounded-2xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <LogoIcon size={32} />
-                  <div>
-                    <h2 className="text-xl font-bold text-white">Your setup</h2>
-                    <p className="text-xs text-white/40">Step 3 of 4</p>
-                  </div>
-                </div>
-                <div className="space-y-5">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className={labelCls}>Veterinarian Name</label>
-                      <input className={inputCls} value={form.vetName} onChange={(e) => updateForm("vetName", e.target.value)} placeholder="e.g. Dr. Smith" />
-                    </div>
-                    <div>
-                      <label className={labelCls}>Current Medications</label>
-                      <input className={inputCls} value={form.medications} onChange={(e) => updateForm("medications", e.target.value)} placeholder="e.g. Carprofen" />
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelCls}>Available Equipment</label>
-                    <div className="flex flex-wrap gap-2 mt-1.5">
-                      {EQUIPMENT_OPTIONS.map((eq) => {
-                        const selected = form.equipment.includes(eq);
-                        return (
-                          <button key={eq} type="button" onClick={() => toggleEquipment(eq)}
-                            className="px-3.5 py-2 rounded-full text-xs font-semibold transition-all border"
-                            style={{
-                              background: selected ? "rgba(14,165,233,0.2)" : "rgba(255,255,255,0.03)",
-                              color: selected ? "#38bdf8" : "rgba(255,255,255,0.4)",
-                              borderColor: selected ? "rgba(14,165,233,0.5)" : "rgba(255,255,255,0.08)",
-                              boxShadow: selected ? "0 0 12px rgba(14,165,233,0.15)" : "none",
-                            }}>
-                            {eq}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div>
-                    <label className={labelCls}>Recovery Goals</label>
-                    <textarea className={`${inputCls} h-20 resize-none`} value={form.goals} onChange={(e) => updateForm("goals", e.target.value)} placeholder="e.g. Return to walking 30 minutes daily..." />
-                  </div>
-                  <div>
-                    <label className={labelCls}>Additional Notes</label>
-                    <textarea className={`${inputCls} h-16 resize-none`} value={form.additionalNotes} onChange={(e) => updateForm("additionalNotes", e.target.value)} placeholder="Anything else B.E.A.U. should know..." />
-                  </div>
-                </div>
-                <div className="flex justify-between mt-8">
-                  <button onClick={() => setStep(2)} className="px-6 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white/70 transition-colors">Back</button>
-                  <button onClick={() => setStep(4)} className="px-8 py-2.5 rounded-xl text-sm font-semibold text-white transition-all hover:shadow-lg hover:shadow-sky-500/20" style={{ background: "linear-gradient(135deg, #0EA5E9, #10B981)" }}>Next</button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Summary / Launch */}
-          {step === 4 && (
-            <div className="w-full max-w-xl slide-up">
-              <ProgressDots current={3} total={4} />
-              <div className="glass rounded-2xl p-8">
-                <div className="flex items-center gap-3 mb-6">
-                  <LogoIcon size={32} />
-                  <div>
-                    <h2 className="text-xl font-bold text-white">Ready to begin</h2>
-                    <p className="text-xs text-white/40">Step 4 of 4 &mdash; Review and start</p>
-                  </div>
-                </div>
-                <div className="glass rounded-xl p-5 space-y-3 mb-6">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-white/40">Patient</span>
-                    <span className="text-sm font-semibold text-white">{form.petName || "Not set"}</span>
-                  </div>
-                  <div className="border-t border-white/5" />
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-white/40">Species</span>
-                    <span className="text-sm text-white/70">{form.species}{form.breed ? ` \u2014 ${form.breed}` : ""}</span>
-                  </div>
-                  {form.age && (<><div className="border-t border-white/5" /><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-white/40">Age</span><span className="text-sm text-white/70">{form.age}</span></div></>)}
-                  {form.condition && (
-                    <>
-                      <div className="border-t border-white/5" />
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-white/40">Condition</span>
-                        <span className="text-sm font-medium" style={{ color: "#0EA5E9" }}>{form.condition === "Other" ? form.conditionOther : form.condition}</span>
-                      </div>
-                    </>
-                  )}
-                  {form.mobility && (<><div className="border-t border-white/5" /><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-white/40">Mobility</span><span className="text-sm text-white/70">{form.mobility}</span></div></>)}
-                  {form.painLevel && (<><div className="border-t border-white/5" /><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-white/40">Pain Level</span><span className="text-sm text-white/70">{form.painLevel}</span></div></>)}
-                  {form.equipment.length > 0 && (<><div className="border-t border-white/5" /><div className="flex items-center justify-between"><span className="text-xs font-bold uppercase tracking-wider text-white/40">Equipment</span><span className="text-sm text-white/50">{form.equipment.join(", ")}</span></div></>)}
-                </div>
-                <button
-                  onClick={handleStartSession}
-                  className="w-full py-4 rounded-xl text-white font-bold text-base transition-all hover:shadow-xl hover:scale-[1.01] active:scale-[0.99]"
-                  style={{
-                    background: "linear-gradient(135deg, #0EA5E9, #10B981)",
-                    boxShadow: "0 0 30px rgba(14,165,233,0.2), 0 4px 15px rgba(0,0,0,0.3)",
-                  }}>
-                  Start Session with B.E.A.U.
-                </button>
-                <div className="flex justify-between mt-4">
-                  <button onClick={() => setStep(3)} className="px-6 py-2.5 rounded-xl text-sm font-medium text-white/40 hover:text-white/70 transition-colors">Back</button>
-                </div>
-                <p className="text-xs text-center mt-4 text-white/20">
-                  B.E.A.U. Home is a rehabilitation guide &mdash; not a substitute for veterinary care.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {showAuth && <AuthModal mode={showAuth} onClose={() => setShowAuth(null)} onSwitch={() => setShowAuth(showAuth === "login" ? "signup" : "login")} onAuth={handleAuth} />}
+        <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 48, fontWeight: 800, color: C.navy, marginBottom: 8, textAlign: "center" }}>
+          B.E.A.U. Home
+        </h1>
+        <p style={{ fontSize: 20, color: C.muted, marginBottom: 4, textAlign: "center" }}>
+          Your Pet's Recovery Companion
+        </p>
+        <p style={{ fontSize: 14, color: C.light, marginBottom: 48, textAlign: "center" }}>
+          Evidence-Based Exercises for Every Pet Parent
+        </p>
+        <button
+          className="btn-sunrise"
+          onClick={() => setScreen(user ? "chat" : "auth")}
+          style={{ padding: "16px 56px", borderRadius: 16, fontSize: 18, fontWeight: 700, cursor: "pointer", border: "none" }}
+        >
+          Enter
+        </button>
+        <p style={{ fontSize: 12, color: C.light, marginTop: 48, textAlign: "center" }}>
+          &copy; 2025 Salvatore Bonanno. All rights reserved.
+        </p>
       </div>
     );
   }
 
-  // ─── CHAT SCREEN ───────────────────────────────────────────────
-  return (
-    <div className="flex h-screen mesh-bg">
-      {/* Main chat */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 glass" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          <div className="flex items-center gap-3">
+  // ═════════════════════════════════════════════════════════════════
+  //  SCREEN 2: SIGN IN / CREATE ACCOUNT
+  // ═════════════════════════════════════════════════════════════════
+  if (screen === "auth") {
+    const inputStyle = {
+      width: "100%", borderRadius: 12, padding: "12px 16px", fontSize: 14, outline: "none",
+      border: `1px solid ${C.border}`, color: C.text, background: C.card,
+      transition: "border-color 0.2s",
+    };
+    return (
+      <div className="mesh-warm fade-in" style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+        <div className="glass slide-up" style={{ borderRadius: 24, padding: 40, width: "100%", maxWidth: 420 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
             <LogoIcon size={36} />
             <div>
-              <h1 className="font-bold text-sm text-white">B.E.A.U. Home</h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ background: "rgba(14,165,233,0.15)", color: "#38bdf8" }}>
-                  {intake.petName}
-                </span>
-                {intake.condition && intake.condition !== "Other" && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ background: "rgba(16,185,129,0.15)", color: "#34d399" }}>
-                    {intake.condition}
-                  </span>
-                )}
-                {intake.condition === "Other" && intake.conditionOther && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium" style={{ background: "rgba(16,185,129,0.15)", color: "#34d399" }}>
-                    {intake.conditionOther}
-                  </span>
-                )}
-              </div>
+              <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: C.navy }}>B.E.A.U. Home</h2>
+              <p style={{ fontSize: 13, color: C.muted }}>Welcome</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button onClick={handleNewSession}
-              className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all glass hover:border-white/20 text-white/50 hover:text-white/80">
-              New Session
-            </button>
-            {user ? (
-              <span className="text-xs text-white/50">{user.name}</span>
-            ) : (
-              <button onClick={() => setShowAuth("login")} className="text-xs font-medium hover:underline" style={{ color: "#0EA5E9" }}>Sign In</button>
+
+          {/* Tabs */}
+          <div style={{ display: "flex", marginBottom: 24, borderRadius: 12, overflow: "hidden", border: `1px solid ${C.border}` }}>
+            {["signin", "create"].map(tab => (
+              <button key={tab} onClick={() => { setAuthTab(tab); setAuthError(""); }}
+                style={{
+                  flex: 1, padding: "10px 0", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
+                  background: authTab === tab ? C.sunrise : C.card,
+                  color: authTab === tab ? "#fff" : C.muted,
+                  transition: "all 0.2s",
+                }}>
+                {tab === "signin" ? "Sign In" : "Create Account"}
+              </button>
+            ))}
+          </div>
+
+          {authError && (
+            <div style={{ padding: 12, borderRadius: 10, background: "#FEF2F2", color: "#DC2626", fontSize: 13, marginBottom: 16 }}>{authError}</div>
+          )}
+
+          <form onSubmit={handleAuthSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {authTab === "create" && (
+              <div>
+                <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 6 }}>Name</label>
+                <input style={inputStyle} value={authName} onChange={e => setAuthName(e.target.value)} placeholder="Your name" />
+              </div>
             )}
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 6 }}>Email</label>
+              <input type="email" style={inputStyle} value={authEmail} onChange={e => setAuthEmail(e.target.value)} placeholder="you@example.com" />
+            </div>
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 6 }}>Password</label>
+              <input type="password" style={inputStyle} value={authPass} onChange={e => setAuthPass(e.target.value)} placeholder={"\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022"} />
+            </div>
+            <button type="submit" className="btn-sunrise" style={{ padding: "14px 0", borderRadius: 12, fontSize: 15, fontWeight: 700, border: "none", cursor: "pointer", marginTop: 4 }}>
+              {authTab === "signin" ? "Sign In" : "Create Account"}
+            </button>
+          </form>
+
+          <p style={{ textAlign: "center", fontSize: 13, color: C.muted, marginTop: 20 }}>
+            {authTab === "signin" ? "Don't have an account? " : "Already have an account? "}
+            <button onClick={() => { setAuthTab(authTab === "signin" ? "create" : "signin"); setAuthError(""); }}
+              style={{ background: "none", border: "none", color: C.sunrise, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
+              {authTab === "signin" ? "Create one" : "Sign in"}
+            </button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ═════════════════════════════════════════════════════════════════
+  //  SCREEN 3: MAIN CHAT
+  // ═════════════════════════════════════════════════════════════════
+  return (
+    <div style={{ display: "flex", height: "100vh", background: C.bg }}>
+
+      {/* ─── Side Panel ─────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div className="slide-up" style={{
+          width: 280, flexShrink: 0, display: "flex", flexDirection: "column",
+          background: C.card, borderRight: `1px solid ${C.border}`,
+          overflowY: "auto",
+        }}>
+          {/* Sidebar header */}
+          <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${C.border}` }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+              <LogoIcon size={32} />
+              <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: 16, color: C.navy }}>B.E.A.U. Home</span>
+            </div>
+            <button onClick={handleNewChat}
+              style={{
+                width: "100%", padding: "10px 0", borderRadius: 10, fontSize: 13, fontWeight: 600,
+                border: `1px solid ${C.border}`, background: C.warm, color: C.navy, cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.peach; }}
+              onMouseLeave={e => { e.currentTarget.style.background = C.warm; }}
+            >
+              + New Chat
+            </button>
+          </div>
+
+          {/* Sidebar sections */}
+          <div style={{ flex: 1, padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
+            {/* Progress Tracker */}
+            <div style={{ padding: "12px 14px", borderRadius: 10, background: C.warm }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <span>{"\uD83D\uDCCA"}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>Progress Tracker</span>
+              </div>
+              <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>
+                {messages.filter(m => m.role === "user").length} questions asked &middot; {messages.filter(m => m.role === "assistant").length} responses
+              </p>
+            </div>
+
+            {/* Saved Exercises */}
+            <div style={{ padding: "12px 14px", borderRadius: 10, background: C.warm }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                <span>{"\uD83D\uDCBE"}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>Saved Exercises</span>
+              </div>
+              {savedExercises.length === 0 ? (
+                <p style={{ fontSize: 12, color: C.muted, margin: 0 }}>Save exercises from chat to see them here</p>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {savedExercises.map((ex, i) => (
+                    <div key={i} style={{ fontSize: 11, color: C.text, padding: "6px 8px", background: C.card, borderRadius: 6, border: `1px solid ${C.border}` }}>
+                      {ex.text}
+                      <span style={{ display: "block", fontSize: 10, color: C.light, marginTop: 2 }}>{ex.savedAt}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* How to Use */}
+            <div style={{ borderRadius: 10, background: C.warm, overflow: "hidden" }}>
+              <button onClick={() => setHelpOpen(!helpOpen)}
+                style={{
+                  width: "100%", padding: "12px 14px", display: "flex", alignItems: "center", gap: 8,
+                  border: "none", background: "transparent", cursor: "pointer", textAlign: "left",
+                }}>
+                <span>{"\u2753"}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: C.navy, flex: 1 }}>How to Use B.E.A.U.</span>
+                <span style={{ color: C.muted, fontSize: 12 }}>{helpOpen ? "\u25B2" : "\u25BC"}</span>
+              </button>
+              {helpOpen && (
+                <div style={{ padding: "0 14px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
+                  {SAMPLE_QUESTIONS.map((q, i) => (
+                    <button key={i} onClick={() => handleSampleQuestion(q)}
+                      style={{
+                        textAlign: "left", fontSize: 12, color: C.navy, padding: "8px 10px",
+                        borderRadius: 8, border: `1px solid ${C.border}`, background: C.card,
+                        cursor: "pointer", transition: "all 0.15s", lineHeight: 1.4,
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.sunrise; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; }}
+                    >
+                      "{q}"
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* User info at bottom */}
+          <div style={{ padding: "16px 20px", borderTop: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.navy }}>{user?.name || "Guest"}</span>
+            <button onClick={handleSignOut}
+              style={{ fontSize: 12, color: C.muted, background: "none", border: "none", cursor: "pointer", textDecoration: "underline" }}>
+              Sign Out
+            </button>
           </div>
         </div>
+      )}
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+      {/* ─── Chat Area ──────────────────────────────────────────── */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0 }}>
+
+        {/* Mobile sidebar toggle */}
+        <div style={{ display: "flex", alignItems: "center", padding: "8px 16px", borderBottom: `1px solid ${C.border}`, background: C.card }}>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)}
+            style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20, color: C.navy, marginRight: 12 }}>
+            {sidebarOpen ? "\u2630" : "\u2630"}
+          </button>
+          <LogoIcon size={24} />
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: 14, color: C.navy, marginLeft: 8 }}>B.E.A.U. Home</span>
+        </div>
+
+        {/* Disclaimer banner */}
+        <div style={{
+          padding: "10px 20px", fontSize: 12, color: C.muted, textAlign: "center",
+          background: C.peach, borderBottom: `1px solid ${C.border}`,
+        }}>
+          B.E.A.U. Home provides evidence-based exercise guidance &mdash; not veterinary diagnosis. Always consult your veterinarian before starting any exercise program.
+        </div>
+
+        {/* Chat messages area */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
+
+          {/* Pet info pill (collapsed) */}
+          {sessionStarted && !petInfoOpen && (
+            <div className="fade-in" style={{
+              display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 16px",
+              borderRadius: 20, background: C.warm, border: `1px solid ${C.border}`,
+              marginBottom: 16, cursor: "pointer", fontSize: 13, color: C.navy, fontWeight: 500,
+            }}
+              onClick={() => setPetInfoOpen(true)}
+            >
+              <span>{speciesEmoji}</span>
+              <span>{pet.name}</span>
+              <span style={{ color: C.light }}>&middot;</span>
+              <span style={{ color: C.muted }}>{pet.breed || pet.species}</span>
+              {pet.condition && <>
+                <span style={{ color: C.light }}>&middot;</span>
+                <span style={{ color: C.sunrise, fontWeight: 600 }}>{pet.condition}</span>
+              </>}
+              <span style={{ fontSize: 10, color: C.light, marginLeft: 4 }}>{"\u25BC"}</span>
+            </div>
+          )}
+
+          {/* Pet info bar (expanded) — above chat when no session yet, or toggled open */}
+          {petInfoOpen && (
+            <div className="glass slide-up" style={{
+              borderRadius: 16, padding: 24, marginBottom: 20,
+              border: `1px solid ${C.border}`,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+                <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: 17, color: C.navy, margin: 0 }}>
+                  Tell us about your pet
+                </h3>
+                {sessionStarted && (
+                  <button onClick={() => setPetInfoOpen(false)}
+                    style={{ background: "none", border: "none", cursor: "pointer", fontSize: 18, color: C.muted }}>&times;</button>
+                )}
+              </div>
+
+              {/* Species toggle */}
+              <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+                {[{ key: "dog", emoji: "\uD83D\uDC15", label: "Dog" }, { key: "cat", emoji: "\uD83D\uDC31", label: "Cat" }].map(s => (
+                  <button key={s.key}
+                    onClick={() => updatePet("species", s.key)}
+                    style={{
+                      flex: 1, padding: "14px 0", borderRadius: 12, fontSize: 15, fontWeight: 600,
+                      border: `2px solid ${pet.species === s.key ? C.sunrise : C.border}`,
+                      background: pet.species === s.key ? C.warm : C.card,
+                      color: pet.species === s.key ? C.sunrise : C.muted,
+                      cursor: "pointer", transition: "all 0.2s",
+                    }}>
+                    <span style={{ fontSize: 24, display: "block", marginBottom: 4 }}>{s.emoji}</span>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Breed + Name row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 6 }}>Breed</label>
+                  <select value={pet.breed} onChange={e => updatePet("breed", e.target.value)}
+                    style={{
+                      width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13,
+                      border: `1px solid ${C.border}`, background: C.card, color: C.text, outline: "none",
+                    }}>
+                    <option value="">Select breed...</option>
+                    {breeds.map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 6 }}>Pet Name</label>
+                  <input value={pet.name} onChange={e => updatePet("name", e.target.value)}
+                    placeholder="e.g. Beau"
+                    style={{
+                      width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13,
+                      border: `1px solid ${C.border}`, background: C.card, color: C.text, outline: "none",
+                    }} />
+                </div>
+              </div>
+
+              {/* Age + Weight row */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 6 }}>Age</label>
+                  <input value={pet.age} onChange={e => updatePet("age", e.target.value)}
+                    placeholder="e.g. 7 years"
+                    style={{
+                      width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13,
+                      border: `1px solid ${C.border}`, background: C.card, color: C.text, outline: "none",
+                    }} />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 6 }}>Weight</label>
+                  <input value={pet.weight} onChange={e => updatePet("weight", e.target.value)}
+                    placeholder="e.g. 65 lbs"
+                    style={{
+                      width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13,
+                      border: `1px solid ${C.border}`, background: C.card, color: C.text, outline: "none",
+                    }} />
+                </div>
+              </div>
+
+              {/* Condition */}
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 6 }}>Condition</label>
+                <select value={pet.condition} onChange={e => updatePet("condition", e.target.value)}
+                  style={{
+                    width: "100%", padding: "10px 12px", borderRadius: 10, fontSize: 13,
+                    border: `1px solid ${C.border}`, background: C.card, color: C.text, outline: "none",
+                  }}>
+                  <option value="">Select condition (optional)...</option>
+                  {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              {/* Start Session */}
+              <button onClick={handleStartSession}
+                className="btn-sunrise"
+                disabled={!pet.name.trim()}
+                style={{
+                  width: "100%", padding: "14px 0", borderRadius: 12, fontSize: 15, fontWeight: 700,
+                  border: "none", cursor: pet.name.trim() ? "pointer" : "not-allowed",
+                  opacity: pet.name.trim() ? 1 : 0.4,
+                }}>
+                Start Session
+              </button>
+            </div>
+          )}
+
+          {/* Welcome message when session not started */}
+          {!sessionStarted && !petInfoOpen && (
+            <div className="fade-in" style={{ textAlign: "center", paddingTop: 60 }}>
+              <LogoIcon size={64} />
+              <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 22, fontWeight: 700, color: C.navy, marginTop: 16 }}>
+                Welcome to B.E.A.U. Home
+              </h2>
+              <p style={{ fontSize: 14, color: C.muted, marginTop: 8 }}>Fill in your pet's info above to get started.</p>
+            </div>
+          )}
+
+          {/* Chat messages */}
           {messages.map((m, i) => {
             const isUser = m.role === "user";
+            const isAssistant = m.role === "assistant";
             return (
-              <div key={i} className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4 fade-in`}>
-                {!isUser && (
-                  <div className="mr-3 flex-shrink-0 mt-1">
-                    <LogoIcon size={32} />
+              <div key={i} className="fade-in" style={{ display: "flex", justifyContent: isUser ? "flex-end" : "flex-start", marginBottom: 16 }}>
+                {/* B.E.A.U. avatar */}
+                {isAssistant && (
+                  <div style={{ marginRight: 10, flexShrink: 0, marginTop: 4 }}>
+                    <LogoIcon size={28} />
                   </div>
                 )}
-                <div
-                  className={`max-w-[75%] px-5 py-3.5 text-sm leading-relaxed whitespace-pre-wrap ${isUser ? "rounded-2xl rounded-br-md" : "rounded-2xl rounded-bl-md"}`}
-                  style={isUser
-                    ? { background: "linear-gradient(135deg, #0EA5E9, #0F4C81)", color: "#fff" }
-                    : { background: "rgba(255,255,255,0.06)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid #0EA5E9", color: "rgba(255,255,255,0.85)" }
-                  }>
-                  {m.text}
+                <div style={{
+                  maxWidth: "75%",
+                  padding: "14px 18px",
+                  fontSize: 14,
+                  lineHeight: 1.6,
+                  borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                  ...(isUser ? {
+                    background: `linear-gradient(135deg, ${C.sunrise}, ${C.coral})`,
+                    color: "#fff",
+                  } : {
+                    background: C.card,
+                    color: C.text,
+                    border: `1px solid ${C.border}`,
+                    borderLeft: `3px solid ${C.sunrise}`,
+                  }),
+                }}>
+                  {isAssistant ? renderMessageText(m.text) : m.text}
                 </div>
               </div>
             );
           })}
 
-          {/* Quick Reply Chips */}
-          {showQuickReplies && !loading && messages.length >= 2 && (
-            <div className="flex flex-wrap gap-2 mb-4 ml-11 fade-in">
-              {QUICK_REPLIES.map((qr, i) => (
-                <button key={i} onClick={() => { setInput(qr); setShowQuickReplies(false); inputRef.current?.focus(); }}
-                  className="px-4 py-2 rounded-full text-xs font-medium transition-all hover:scale-[1.03]"
-                  style={{
-                    background: "rgba(14,165,233,0.1)",
-                    border: "1px solid rgba(14,165,233,0.25)",
-                    color: "#38bdf8",
-                  }}>
-                  {qr}
-                </button>
-              ))}
+          {/* Quick actions after assistant messages */}
+          {messages.length > 0 && messages[messages.length - 1].role === "assistant" && !loading && (
+            <div className="fade-in" style={{ display: "flex", gap: 8, marginLeft: 38, marginBottom: 16, flexWrap: "wrap" }}>
+              <button onClick={() => handleQuickAction("save", messages.length - 1)}
+                style={{
+                  padding: "8px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  border: `1px solid ${C.border}`, background: C.warm, color: C.navy,
+                  cursor: "pointer", transition: "all 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.sunrise; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; }}
+              >
+                Save this exercise
+              </button>
+              <button onClick={() => handleQuickAction("another")}
+                style={{
+                  padding: "8px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  border: `1px solid ${C.border}`, background: C.warm, color: C.navy,
+                  cursor: "pointer", transition: "all 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.sunrise; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; }}
+              >
+                Show me another option
+              </button>
+              <button onClick={() => handleQuickAction("easier")}
+                style={{
+                  padding: "8px 14px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                  border: `1px solid ${C.border}`, background: C.warm, color: C.navy,
+                  cursor: "pointer", transition: "all 0.15s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.sunrise; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; }}
+              >
+                Make it easier
+              </button>
             </div>
           )}
 
-          {/* Loading indicator */}
+          {/* Loading */}
           {loading && (
-            <div className="flex justify-start mb-4">
-              <div className="mr-3 flex-shrink-0">
-                <LogoIcon size={32} />
+            <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 16 }}>
+              <div style={{ marginRight: 10, flexShrink: 0 }}>
+                <LogoIcon size={28} />
               </div>
-              <div className="glass px-5 py-4 rounded-2xl rounded-bl-md" style={{ borderLeft: "3px solid #0EA5E9" }}>
-                <span className="paw-pulse text-2xl inline-block">{"\ud83d\udc3e"}</span>
+              <div style={{
+                padding: "14px 20px", borderRadius: "18px 18px 18px 4px",
+                background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.sunrise}`,
+              }}>
+                <span className="paw-pulse" style={{ fontSize: 24, display: "inline-block" }}>{"\uD83D\uDC3E"}</span>
               </div>
             </div>
           )}
+
           <div ref={chatEndRef} />
         </div>
 
-        {/* Input */}
-        <div className="px-6 py-4">
-          <form onSubmit={handleSend} className="relative">
-            <div
-              className="flex items-center gap-3 rounded-full px-5 py-1 transition-all"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,0.08)",
+        {/* ─── Chat Input ─────────────────────────────────────── */}
+        {sessionStarted && (
+          <div style={{ padding: "12px 24px 20px", borderTop: `1px solid ${C.border}`, background: C.card }}>
+            <form onSubmit={handleSend} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{
+                flex: 1, display: "flex", alignItems: "center", gap: 10,
+                padding: "4px 6px 4px 18px", borderRadius: 24,
+                border: `1px solid ${C.border}`, background: C.bg,
+                transition: "border-color 0.2s",
               }}>
-              <input
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={`Ask B.E.A.U. about ${intake.petName}'s recovery...`}
-                disabled={loading}
-                className="flex-1 bg-transparent py-3 text-sm text-white placeholder-white/30 outline-none"
-              />
-              <button
-                type="submit"
-                disabled={loading || !input.trim()}
-                className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-lg"
-                style={{ background: "linear-gradient(135deg, #0EA5E9, #10B981)" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-              </button>
-            </div>
-          </form>
-          <p className="text-xs text-center mt-3 text-white/20">
-            B.E.A.U. Home is a guide, not a veterinarian. Always confirm recommendations with your vet.
-          </p>
-        </div>
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  placeholder={`Ask B.E.A.U. about ${pet.name || "your pet"}...`}
+                  disabled={loading}
+                  style={{
+                    flex: 1, border: "none", background: "transparent", outline: "none",
+                    padding: "10px 0", fontSize: 14, color: C.text,
+                  }}
+                />
+                <button type="submit" disabled={loading || !input.trim()}
+                  className="btn-sunrise"
+                  style={{
+                    width: 38, height: 38, borderRadius: "50%", border: "none",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    cursor: loading || !input.trim() ? "not-allowed" : "pointer",
+                    opacity: loading || !input.trim() ? 0.3 : 1,
+                    flexShrink: 0,
+                  }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                  </svg>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
-
-      {/* Sidebar (desktop only) */}
-      <div className="w-80 hidden lg:flex flex-col glass" style={{ borderLeft: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="flex" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-          {SIDEBAR_TABS.map((tab) => {
-            const active = sidebarTab === tab.key;
-            return (
-              <button key={tab.key} onClick={() => setSidebarTab(tab.key)}
-                className="flex-1 py-3.5 text-center text-xs font-semibold transition-all"
-                style={{
-                  color: active ? "#38bdf8" : "rgba(255,255,255,0.3)",
-                  borderBottom: active ? "2px solid #0EA5E9" : "2px solid transparent",
-                  background: active ? "rgba(14,165,233,0.06)" : "transparent",
-                }}>
-                <span className="block text-base mb-0.5">{tab.icon}</span>
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-        <div className="flex-1 overflow-y-auto">
-          <SidebarPanel activeTab={sidebarTab} intake={intake} messages={messages} onSuggest={handleSuggest} />
-        </div>
-      </div>
-
-      {showAuth && <AuthModal mode={showAuth} onClose={() => setShowAuth(null)} onSwitch={() => setShowAuth(showAuth === "login" ? "signup" : "login")} onAuth={handleAuth} />}
     </div>
   );
 }
