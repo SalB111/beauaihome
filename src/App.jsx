@@ -1,6 +1,6 @@
 import React from "react";
-import BeauHomeView from "./BeauHomeView";
+import BeauHome from "./BeauHome";
 
 export default function App() {
-  return <BeauHomeView />;
+  return <BeauHome />;
 }

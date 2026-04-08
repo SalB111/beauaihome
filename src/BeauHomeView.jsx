@@ -2,11 +2,13 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 
 // ─── Color Constants ───────────────────────────────────────────────────────
 const C = {
-  sunrise: "#FF6B35",
-  coral: "#F7931E",
+  flame: "#E8751A",
+  fire: "#D4531A",
+  amber: "#F5A623",
   gold: "#FFB347",
-  warm: "#FFF4E6",
-  peach: "#FFECD2",
+  copper: "#CC5500",
+  warm: "#FFF8F0",
+  cream: "#FFF1E6",
   sky: "#4ECDC4",
   teal: "#2AB7CA",
   navy: "#1A535C",
@@ -55,15 +57,13 @@ const CONDITIONS = [
   "Muscle Building","General Deconditioning","Obesity/Weight Management","Soft Tissue Injury",
 ];
 
-const SAMPLE_QUESTIONS = [
-  "What exercises can I do with my pet after TPLO surgery?",
-  "My dog is 12 years old with arthritis, what can I do at home?",
-  "I have a couch, some pillows, and stairs \u2014 what exercises can we do?",
-  "Create an outdoor exercise course for my dog using my backyard",
-  "Beach exercises for post-surgery recovery",
-  "My cat had surgery 2 weeks ago, what gentle exercises can I do?",
-  "Muscle building exercises for my agility dog",
-  "Zig-zag walking \u2014 how does it help?",
+const HOW_TO_STEPS = [
+  { step: 1, title: "Enter Your Pet's Info", desc: "Start by selecting your pet's species (dog or cat), breed, name, age, weight, and condition. This helps B.E.A.U. personalize every exercise recommendation." },
+  { step: 2, title: "Describe Your Situation", desc: "Tell B.E.A.U. about your pet's condition, how far along they are in recovery, and what you have available at home \u2014 furniture, yard space, stairs, pillows, towels, etc." },
+  { step: 3, title: "Ask for Exercises", desc: "Ask B.E.A.U. for specific exercises. Be specific: 'indoor exercises for post-TPLO week 4' or 'backyard obstacle course for my arthritic Lab' gets better results than 'what should I do?'" },
+  { step: 4, title: "Save & Track", desc: "When B.E.A.U. gives you exercises you like, tap 'Save this exercise' to add it to your saved list. Check your Progress Tracker to see how your pet is advancing." },
+  { step: 5, title: "Follow the Plan", desc: "Consistency is key. Do the exercises daily as recommended. Tell B.E.A.U. how your pet responded so it can adjust difficulty \u2014 harder, easier, or different." },
+  { step: 6, title: "Know When to Stop", desc: "If your pet shows pain, limping, or reluctance \u2014 stop immediately. B.E.A.U. will always remind you: consult your veterinarian for any concerns." },
 ];
 
 // ─── Logo Component ────────────────────────────────────────────────────────
@@ -72,23 +72,23 @@ const LogoIcon = ({ size = 40 }) => (
     <rect width="200" height="200" rx="38" fill="#1A535C"/>
     <defs>
       <linearGradient id="sG" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0%" stopColor="#FF6B35"/><stop offset="45%" stopColor="#FFB347"/><stop offset="100%" stopColor="#FF6B35"/>
+        <stop offset="0%" stopColor="#E8751A"/><stop offset="45%" stopColor="#FFB347"/><stop offset="100%" stopColor="#E8751A"/>
       </linearGradient>
       <linearGradient id="snG" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#FFB347"/><stop offset="100%" stopColor="#FF6B35"/>
+        <stop offset="0%" stopColor="#FFB347"/><stop offset="100%" stopColor="#E8751A"/>
       </linearGradient>
     </defs>
-    <rect x="1.5" y="1.5" width="197" height="197" rx="36.5" fill="none" stroke="#FF6B35" strokeWidth="1.2" strokeOpacity="0.3"/>
+    <rect x="1.5" y="1.5" width="197" height="197" rx="36.5" fill="none" stroke="#E8751A" strokeWidth="1.2" strokeOpacity="0.3"/>
     <path d="M 91 122 C 40 116, 36 80, 109 76" fill="none" stroke="#C44D1A" strokeWidth="6" strokeOpacity="0.5" strokeLinecap="round"/>
     <rect x="95.5" y="24" width="9" height="152" rx="4.5" fill="url(#sG)"/>
-    <circle cx="100" cy="22" r="10" fill="#FF6B35"/><circle cx="100" cy="22" r="5.5" fill="#1A535C"/><circle cx="100" cy="22" r="2.5" fill="#FFB347"/>
-    <rect x="82" y="172" width="36" height="5.5" rx="2.75" fill="#FF6B35"/>
+    <circle cx="100" cy="22" r="10" fill="#E8751A"/><circle cx="100" cy="22" r="5.5" fill="#1A535C"/><circle cx="100" cy="22" r="2.5" fill="#FFB347"/>
+    <rect x="82" y="172" width="36" height="5.5" rx="2.75" fill="#E8751A"/>
     <path d="M 116 166 C 156 158, 158 118, 91 122" fill="none" stroke="url(#snG)" strokeWidth="6.2" strokeLinecap="round"/>
     <path d="M 109 76 C 152 68, 152 34, 88 26" fill="none" stroke="url(#snG)" strokeWidth="6.2" strokeLinecap="round"/>
-    <ellipse cx="84" cy="21" rx="15" ry="10" fill="#0F3D45" stroke="#FF6B35" strokeWidth="2.2" transform="rotate(-28 84 21)"/>
+    <ellipse cx="84" cy="21" rx="15" ry="10" fill="#0F3D45" stroke="#E8751A" strokeWidth="2.2" transform="rotate(-28 84 21)"/>
     <circle cx="77" cy="17" r="3.8" fill="#FFB347"/><circle cx="77" cy="17" r="1.8" fill="#0F3D45"/>
-    <path d="M 69 24 C 63 21, 59 19, 55 17" fill="none" stroke="#FF6B35" strokeWidth="1.6" strokeLinecap="round"/>
-    <path d="M 69 24 C 63 25, 59 27, 55 30" fill="none" stroke="#FF6B35" strokeWidth="1.6" strokeLinecap="round"/>
+    <path d="M 69 24 C 63 21, 59 19, 55 17" fill="none" stroke="#E8751A" strokeWidth="1.6" strokeLinecap="round"/>
+    <path d="M 69 24 C 63 25, 59 27, 55 30" fill="none" stroke="#E8751A" strokeWidth="1.6" strokeLinecap="round"/>
   </svg>
 );
 
@@ -171,7 +171,7 @@ function renderMessageText(text) {
     } else if (line.startsWith("- ") || line.startsWith("* ")) {
       elements.push(
         <div key={i} style={{ display: "flex", gap: 8, marginBottom: 2, paddingLeft: 4 }}>
-          <span style={{ color: C.sunrise, flexShrink: 0 }}>{"\u2022"}</span>
+          <span style={{ color: C.flame, flexShrink: 0 }}>{"\u2022"}</span>
           <span>{formatInline(line.slice(2))}</span>
         </div>
       );
@@ -179,7 +179,7 @@ function renderMessageText(text) {
       const num = line.match(/^(\d+)\.\s/)[1];
       elements.push(
         <div key={i} style={{ display: "flex", gap: 8, marginBottom: 2, paddingLeft: 4 }}>
-          <span style={{ color: C.sunrise, fontWeight: 600, flexShrink: 0 }}>{num}.</span>
+          <span style={{ color: C.flame, fontWeight: 600, flexShrink: 0 }}>{num}.</span>
           <span>{formatInline(line.replace(/^\d+\.\s/, ""))}</span>
         </div>
       );
@@ -341,11 +341,6 @@ export default function BeauHomeView() {
     setPet({ species: "dog", breed: "", name: "", age: "", weight: "", condition: "" });
   }
 
-  function handleSampleQuestion(q) {
-    setInput(q);
-    inputRef.current?.focus();
-  }
-
   const breeds = pet.species === "dog" ? DOG_BREEDS : CAT_BREEDS;
   const speciesEmoji = pet.species === "dog" ? "\uD83D\uDC15" : "\uD83D\uDC31";
 
@@ -355,7 +350,7 @@ export default function BeauHomeView() {
   if (screen === "splash") {
     return (
       <div className="mesh-warm fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <div style={{ filter: "drop-shadow(0 0 60px rgba(255,107,53,0.2))", marginBottom: 32 }}>
+        <div style={{ filter: "drop-shadow(0 0 60px rgba(232,117,26,0.2))", marginBottom: 32 }}>
           <LogoIcon size={120} />
         </div>
         <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 48, fontWeight: 800, color: C.navy, marginBottom: 8, textAlign: "center" }}>
@@ -407,7 +402,7 @@ export default function BeauHomeView() {
               <button key={tab} onClick={() => { setAuthTab(tab); setAuthError(""); }}
                 style={{
                   flex: 1, padding: "10px 0", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer",
-                  background: authTab === tab ? C.sunrise : C.card,
+                  background: authTab === tab ? C.flame : C.card,
                   color: authTab === tab ? "#fff" : C.muted,
                   transition: "all 0.2s",
                 }}>
@@ -443,7 +438,7 @@ export default function BeauHomeView() {
           <p style={{ textAlign: "center", fontSize: 13, color: C.muted, marginTop: 20 }}>
             {authTab === "signin" ? "Don't have an account? " : "Already have an account? "}
             <button onClick={() => { setAuthTab(authTab === "signin" ? "create" : "signin"); setAuthError(""); }}
-              style={{ background: "none", border: "none", color: C.sunrise, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
+              style={{ background: "none", border: "none", color: C.flame, fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}>
               {authTab === "signin" ? "Create one" : "Sign in"}
             </button>
           </p>
@@ -477,7 +472,7 @@ export default function BeauHomeView() {
                 border: `1px solid ${C.border}`, background: C.warm, color: C.navy, cursor: "pointer",
                 transition: "all 0.2s",
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = C.peach; }}
+              onMouseEnter={e => { e.currentTarget.style.background = C.cream; }}
               onMouseLeave={e => { e.currentTarget.style.background = C.warm; }}
             >
               + New Chat
@@ -529,19 +524,23 @@ export default function BeauHomeView() {
                 <span style={{ color: C.muted, fontSize: 12 }}>{helpOpen ? "\u25B2" : "\u25BC"}</span>
               </button>
               {helpOpen && (
-                <div style={{ padding: "0 14px 12px", display: "flex", flexDirection: "column", gap: 4 }}>
-                  {SAMPLE_QUESTIONS.map((q, i) => (
-                    <button key={i} onClick={() => handleSampleQuestion(q)}
-                      style={{
-                        textAlign: "left", fontSize: 12, color: C.navy, padding: "8px 10px",
-                        borderRadius: 8, border: `1px solid ${C.border}`, background: C.card,
-                        cursor: "pointer", transition: "all 0.15s", lineHeight: 1.4,
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = C.sunrise; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; }}
-                    >
-                      "{q}"
-                    </button>
+                <div style={{ padding: "0 14px 12px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  {HOW_TO_STEPS.map((item) => (
+                    <div key={item.step} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <div style={{
+                        width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
+                        background: `linear-gradient(135deg, ${C.flame}, ${C.amber})`,
+                        color: "#fff", fontSize: 12, fontWeight: 700,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        marginTop: 1,
+                      }}>
+                        {item.step}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: C.navy, marginBottom: 2 }}>{item.title}</div>
+                        <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.4 }}>{item.desc}</div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -575,7 +574,7 @@ export default function BeauHomeView() {
         {/* Disclaimer banner */}
         <div style={{
           padding: "10px 20px", fontSize: 12, color: C.muted, textAlign: "center",
-          background: C.peach, borderBottom: `1px solid ${C.border}`,
+          background: C.cream, borderBottom: `1px solid ${C.border}`,
         }}>
           B.E.A.U. Home provides evidence-based exercise guidance &mdash; not veterinary diagnosis. Always consult your veterinarian before starting any exercise program.
         </div>
@@ -598,7 +597,7 @@ export default function BeauHomeView() {
               <span style={{ color: C.muted }}>{pet.breed || pet.species}</span>
               {pet.condition && <>
                 <span style={{ color: C.light }}>&middot;</span>
-                <span style={{ color: C.sunrise, fontWeight: 600 }}>{pet.condition}</span>
+                <span style={{ color: C.flame, fontWeight: 600 }}>{pet.condition}</span>
               </>}
               <span style={{ fontSize: 10, color: C.light, marginLeft: 4 }}>{"\u25BC"}</span>
             </div>
@@ -627,9 +626,9 @@ export default function BeauHomeView() {
                     onClick={() => updatePet("species", s.key)}
                     style={{
                       flex: 1, padding: "14px 0", borderRadius: 12, fontSize: 15, fontWeight: 600,
-                      border: `2px solid ${pet.species === s.key ? C.sunrise : C.border}`,
+                      border: `2px solid ${pet.species === s.key ? C.flame : C.border}`,
                       background: pet.species === s.key ? C.warm : C.card,
-                      color: pet.species === s.key ? C.sunrise : C.muted,
+                      color: pet.species === s.key ? C.flame : C.muted,
                       cursor: "pointer", transition: "all 0.2s",
                     }}>
                     <span style={{ fontSize: 24, display: "block", marginBottom: 4 }}>{s.emoji}</span>
@@ -741,13 +740,13 @@ export default function BeauHomeView() {
                   lineHeight: 1.6,
                   borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
                   ...(isUser ? {
-                    background: `linear-gradient(135deg, ${C.sunrise}, ${C.coral})`,
+                    background: `linear-gradient(135deg, ${C.flame}, ${C.fire})`,
                     color: "#fff",
                   } : {
                     background: C.card,
                     color: C.text,
                     border: `1px solid ${C.border}`,
-                    borderLeft: `3px solid ${C.sunrise}`,
+                    borderLeft: `3px solid ${C.flame}`,
                   }),
                 }}>
                   {isAssistant ? renderMessageText(m.text) : m.text}
@@ -765,7 +764,7 @@ export default function BeauHomeView() {
                   border: `1px solid ${C.border}`, background: C.warm, color: C.navy,
                   cursor: "pointer", transition: "all 0.15s",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.sunrise; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.flame; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; }}
               >
                 Save this exercise
@@ -776,7 +775,7 @@ export default function BeauHomeView() {
                   border: `1px solid ${C.border}`, background: C.warm, color: C.navy,
                   cursor: "pointer", transition: "all 0.15s",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.sunrise; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.flame; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; }}
               >
                 Show me another option
@@ -787,7 +786,7 @@ export default function BeauHomeView() {
                   border: `1px solid ${C.border}`, background: C.warm, color: C.navy,
                   cursor: "pointer", transition: "all 0.15s",
                 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = C.sunrise; }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = C.flame; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; }}
               >
                 Make it easier
@@ -803,7 +802,7 @@ export default function BeauHomeView() {
               </div>
               <div style={{
                 padding: "14px 20px", borderRadius: "18px 18px 18px 4px",
-                background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.sunrise}`,
+                background: C.card, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.flame}`,
               }}>
                 <span className="paw-pulse" style={{ fontSize: 24, display: "inline-block" }}>{"\uD83D\uDC3E"}</span>
               </div>
