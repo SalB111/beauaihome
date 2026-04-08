@@ -44,6 +44,24 @@ const EQUIPMENT_OPTIONS = [
   "Therapy pool (clinic access)",
 ];
 
+// ─── Theme ──────────────────────────────────────────────────────────────────
+const T = {
+  navy: "#0C2340",
+  blue: "#0F4C81",
+  teal: "#0EA5E9",
+  green: "#10B981",
+  gold: "#F59E0B",
+  bg: "#F0F4F8",
+  card: "#FFFFFF",
+  text: "#1E293B",
+  muted: "#64748B",
+  light: "#94A3B8",
+  border: "#E2E8F0",
+  tealBg: "#F0F9FF",
+  greenBg: "#ECFDF5",
+  amberBg: "#FFFBEB",
+};
+
 // ─── System Prompt Builder ──────────────────────────────────────────────────
 function buildSystemPrompt(intake) {
   const {
@@ -116,76 +134,49 @@ function AuthModal({ mode, onClose, onSwitch, onAuth }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!email || !password) {
-      setError("Email and password are required.");
-      return;
-    }
-    if (mode === "signup" && !name) {
-      setError("Name is required.");
-      return;
-    }
-    // Simulate auth — in production this hits a real endpoint
+    if (!email || !password) { setError("Email and password are required."); return; }
+    if (mode === "signup" && !name) { setError("Name is required."); return; }
     onAuth({ email, name: name || email.split("@")[0], mode });
   }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl">
+      <div className="rounded-2xl shadow-2xl w-full max-w-md p-8 relative" style={{ background: T.card }}>
+        <button onClick={onClose} className="absolute top-4 right-4 text-xl" style={{ color: T.light }}>
           &times;
         </button>
-        <h2 className="text-2xl font-bold text-[#0F4C81] mb-1">
+        <h2 className="text-2xl font-bold mb-1" style={{ color: T.blue }}>
           {mode === "login" ? "Welcome Back" : "Create Account"}
         </h2>
-        <p className="text-sm text-gray-500 mb-6">
-          {mode === "login"
-            ? "Sign in to save your pet's progress"
-            : "Join B.E.A.U. Home to track your pet's recovery"}
+        <p className="text-sm mb-6" style={{ color: T.muted }}>
+          {mode === "login" ? "Sign in to save your pet's progress" : "Join B.E.A.U. Home to track recovery"}
         </p>
         {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent outline-none"
-                placeholder="Your name"
-              />
+              <label className="block text-sm font-medium mb-1" style={{ color: T.text }}>Your Name</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2" style={{ border: `1px solid ${T.border}`, focusRingColor: T.teal }} placeholder="Your name" />
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent outline-none"
-              placeholder="you@example.com"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: T.text }}>Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400" style={{ border: `1px solid ${T.border}` }} placeholder="you@example.com" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent outline-none"
-              placeholder="••••••••"
-            />
+            <label className="block text-sm font-medium mb-1" style={{ color: T.text }}>Password</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400" style={{ border: `1px solid ${T.border}` }} placeholder="••••••••" />
           </div>
-          <button
-            type="submit"
-            className="w-full bg-[#0F4C81] text-white font-semibold py-2.5 rounded-lg hover:bg-[#0d3f6b] transition-colors"
-          >
+          <button type="submit" className="w-full text-white font-semibold py-2.5 rounded-lg transition-colors" style={{ background: T.blue }}>
             {mode === "login" ? "Sign In" : "Create Account"}
           </button>
         </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm mt-4" style={{ color: T.muted }}>
           {mode === "login" ? "Don't have an account? " : "Already have an account? "}
-          <button onClick={onSwitch} className="text-[#0EA5E9] font-medium hover:underline">
+          <button onClick={onSwitch} className="font-medium hover:underline" style={{ color: T.teal }}>
             {mode === "login" ? "Sign Up" : "Sign In"}
           </button>
         </p>
@@ -197,92 +188,77 @@ function AuthModal({ mode, onClose, onSwitch, onAuth }) {
 // ─── Intake Form ────────────────────────────────────────────────────────────
 function IntakeForm({ onSubmit }) {
   const [form, setForm] = useState({
-    petName: "",
-    species: "Dog",
-    breed: "",
-    age: "",
-    weight: "",
-    size: "",
-    condition: "",
-    conditionOther: "",
-    surgery: false,
-    surgeryDate: "",
-    surgeryWeeksAgo: "",
-    mobility: "",
-    painLevel: "",
-    vetName: "",
-    medications: "",
-    equipment: [],
-    goals: "",
-    additionalNotes: "",
+    petName: "", species: "Dog", breed: "", age: "", weight: "", size: "",
+    condition: "", conditionOther: "", surgery: false, surgeryDate: "", surgeryWeeksAgo: "",
+    mobility: "", painLevel: "", vetName: "", medications: "",
+    equipment: [], goals: "", additionalNotes: "",
   });
 
-  function update(field, value) {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  }
-
+  function update(field, value) { setForm((p) => ({ ...p, [field]: value })); }
   function toggleEquipment(item) {
-    setForm((prev) => {
-      const eq = prev.equipment.includes(item)
-        ? prev.equipment.filter((e) => e !== item)
-        : [...prev.equipment, item];
-      return { ...prev, equipment: eq };
-    });
+    setForm((p) => ({ ...p, equipment: p.equipment.includes(item) ? p.equipment.filter((e) => e !== item) : [...p.equipment, item] }));
   }
+  function handleSubmit(e) { e.preventDefault(); if (!form.petName.trim()) return; onSubmit(form); }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    if (!form.petName.trim()) return;
-    onSubmit(form);
-  }
-
-  const inputCls =
-    "w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent outline-none bg-white";
-  const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+  const inputCls = "w-full rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-sky-400 bg-white";
+  const inputStyle = { border: `1px solid ${T.border}`, color: T.text };
+  const labelCls = "block text-sm font-semibold mb-1.5";
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <div className="text-5xl mb-3">🐾</div>
-        <h1 className="text-3xl font-bold text-[#0F4C81]">B.E.A.U. Home</h1>
-        <p className="text-gray-500 mt-2">
-          Your pet's personalized rehabilitation guide — powered by 30 years of clinical expertise.
+    <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="text-center mb-10">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-4" style={{ background: `linear-gradient(135deg, ${T.navy}, ${T.blue})` }}>
+          <span className="text-4xl">🐾</span>
+        </div>
+        <h1 className="text-4xl font-extrabold tracking-tight" style={{ color: T.navy }}>B.E.A.U. Home</h1>
+        <p className="mt-2 text-lg" style={{ color: T.muted }}>
+          Your pet's personalized rehabilitation guide
         </p>
+        <p className="text-sm mt-1" style={{ color: T.light }}>Powered by 30 years of clinical expertise</p>
       </div>
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 space-y-6">
-        <h2 className="text-lg font-semibold text-[#0F4C81] border-b pb-3">Patient Intake</h2>
 
-        {/* Row 1: Name, Species, Breed */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className={labelCls}>Pet Name *</label>
-            <input className={inputCls} value={form.petName} onChange={(e) => update("petName", e.target.value)} placeholder="e.g. Beau" required />
+      <form onSubmit={handleSubmit} className="rounded-2xl shadow-lg p-8 space-y-7" style={{ background: T.card, border: `1px solid ${T.border}` }}>
+        <div className="flex items-center gap-3 pb-4" style={{ borderBottom: `2px solid ${T.teal}` }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-lg font-bold" style={{ background: T.blue }}>
+            1
           </div>
           <div>
-            <label className={labelCls}>Species</label>
-            <select className={inputCls} value={form.species} onChange={(e) => update("species", e.target.value)}>
+            <h2 className="text-lg font-bold" style={{ color: T.navy }}>Patient Intake</h2>
+            <p className="text-xs" style={{ color: T.muted }}>Tell us about your pet so B.E.A.U. can personalize their plan</p>
+          </div>
+        </div>
+
+        {/* Name, Species, Breed */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className={labelCls} style={{ color: T.text }}>Pet Name <span style={{ color: "#EF4444" }}>*</span></label>
+            <input className={inputCls} style={inputStyle} value={form.petName} onChange={(e) => update("petName", e.target.value)} placeholder="e.g. Beau" required />
+          </div>
+          <div>
+            <label className={labelCls} style={{ color: T.text }}>Species</label>
+            <select className={inputCls} style={inputStyle} value={form.species} onChange={(e) => update("species", e.target.value)}>
               {SPECIES_OPTIONS.map((s) => <option key={s}>{s}</option>)}
             </select>
           </div>
           <div>
-            <label className={labelCls}>Breed</label>
-            <input className={inputCls} value={form.breed} onChange={(e) => update("breed", e.target.value)} placeholder="e.g. Golden Retriever" />
+            <label className={labelCls} style={{ color: T.text }}>Breed</label>
+            <input className={inputCls} style={inputStyle} value={form.breed} onChange={(e) => update("breed", e.target.value)} placeholder="e.g. Golden Retriever" />
           </div>
         </div>
 
-        {/* Row 2: Age, Weight, Size */}
+        {/* Age, Weight, Size */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className={labelCls}>Age</label>
-            <input className={inputCls} value={form.age} onChange={(e) => update("age", e.target.value)} placeholder="e.g. 7 years" />
+            <label className={labelCls} style={{ color: T.text }}>Age</label>
+            <input className={inputCls} style={inputStyle} value={form.age} onChange={(e) => update("age", e.target.value)} placeholder="e.g. 7 years" />
           </div>
           <div>
-            <label className={labelCls}>Weight</label>
-            <input className={inputCls} value={form.weight} onChange={(e) => update("weight", e.target.value)} placeholder="e.g. 65 lbs" />
+            <label className={labelCls} style={{ color: T.text }}>Weight</label>
+            <input className={inputCls} style={inputStyle} value={form.weight} onChange={(e) => update("weight", e.target.value)} placeholder="e.g. 65 lbs" />
           </div>
           <div>
-            <label className={labelCls}>Size</label>
-            <select className={inputCls} value={form.size} onChange={(e) => update("size", e.target.value)}>
+            <label className={labelCls} style={{ color: T.text }}>Size</label>
+            <select className={inputCls} style={inputStyle} value={form.size} onChange={(e) => update("size", e.target.value)}>
               <option value="">Select size...</option>
               {SIZE_OPTIONS.map((s) => <option key={s}>{s}</option>)}
             </select>
@@ -291,31 +267,31 @@ function IntakeForm({ onSubmit }) {
 
         {/* Condition */}
         <div>
-          <label className={labelCls}>Primary Condition</label>
-          <select className={inputCls} value={form.condition} onChange={(e) => update("condition", e.target.value)}>
+          <label className={labelCls} style={{ color: T.text }}>Primary Condition</label>
+          <select className={inputCls} style={inputStyle} value={form.condition} onChange={(e) => update("condition", e.target.value)}>
             <option value="">Select condition...</option>
             {CONDITION_OPTIONS.map((c) => <option key={c}>{c}</option>)}
           </select>
           {form.condition === "Other" && (
-            <input className={`${inputCls} mt-2`} value={form.conditionOther} onChange={(e) => update("conditionOther", e.target.value)} placeholder="Describe the condition..." />
+            <input className={`${inputCls} mt-2`} style={inputStyle} value={form.conditionOther} onChange={(e) => update("conditionOther", e.target.value)} placeholder="Describe the condition..." />
           )}
         </div>
 
         {/* Surgery */}
         <div className="space-y-3">
-          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
-            <input type="checkbox" checked={form.surgery} onChange={(e) => update("surgery", e.target.checked)} className="rounded border-gray-300 text-[#0EA5E9] focus:ring-[#0EA5E9]" />
+          <label className="flex items-center gap-2.5 text-sm font-semibold cursor-pointer" style={{ color: T.text }}>
+            <input type="checkbox" checked={form.surgery} onChange={(e) => update("surgery", e.target.checked)} className="rounded w-4 h-4 accent-sky-500" />
             Recent surgery
           </label>
           {form.surgery && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-7">
               <div>
-                <label className={labelCls}>Surgery Date</label>
-                <input type="date" className={inputCls} value={form.surgeryDate} onChange={(e) => update("surgeryDate", e.target.value)} />
+                <label className={labelCls} style={{ color: T.text }}>Surgery Date</label>
+                <input type="date" className={inputCls} style={inputStyle} value={form.surgeryDate} onChange={(e) => update("surgeryDate", e.target.value)} />
               </div>
               <div>
-                <label className={labelCls}>Weeks Since Surgery</label>
-                <input type="number" className={inputCls} value={form.surgeryWeeksAgo} onChange={(e) => update("surgeryWeeksAgo", e.target.value)} placeholder="e.g. 4" />
+                <label className={labelCls} style={{ color: T.text }}>Weeks Since Surgery</label>
+                <input type="number" className={inputCls} style={inputStyle} value={form.surgeryWeeksAgo} onChange={(e) => update("surgeryWeeksAgo", e.target.value)} placeholder="e.g. 4" />
               </div>
             </div>
           )}
@@ -324,15 +300,15 @@ function IntakeForm({ onSubmit }) {
         {/* Mobility & Pain */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Current Mobility</label>
-            <select className={inputCls} value={form.mobility} onChange={(e) => update("mobility", e.target.value)}>
+            <label className={labelCls} style={{ color: T.text }}>Current Mobility</label>
+            <select className={inputCls} style={inputStyle} value={form.mobility} onChange={(e) => update("mobility", e.target.value)}>
               <option value="">Select...</option>
               {MOBILITY_OPTIONS.map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
           <div>
-            <label className={labelCls}>Pain Level</label>
-            <select className={inputCls} value={form.painLevel} onChange={(e) => update("painLevel", e.target.value)}>
+            <label className={labelCls} style={{ color: T.text }}>Pain Level</label>
+            <select className={inputCls} style={inputStyle} value={form.painLevel} onChange={(e) => update("painLevel", e.target.value)}>
               <option value="">Select...</option>
               {PAIN_OPTIONS.map((p) => <option key={p}>{p}</option>)}
             </select>
@@ -342,30 +318,27 @@ function IntakeForm({ onSubmit }) {
         {/* Vet & Meds */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className={labelCls}>Veterinarian Name</label>
-            <input className={inputCls} value={form.vetName} onChange={(e) => update("vetName", e.target.value)} placeholder="e.g. Dr. Smith" />
+            <label className={labelCls} style={{ color: T.text }}>Veterinarian Name</label>
+            <input className={inputCls} style={inputStyle} value={form.vetName} onChange={(e) => update("vetName", e.target.value)} placeholder="e.g. Dr. Smith" />
           </div>
           <div>
-            <label className={labelCls}>Current Medications</label>
-            <input className={inputCls} value={form.medications} onChange={(e) => update("medications", e.target.value)} placeholder="e.g. Carprofen, Gabapentin" />
+            <label className={labelCls} style={{ color: T.text }}>Current Medications</label>
+            <input className={inputCls} style={inputStyle} value={form.medications} onChange={(e) => update("medications", e.target.value)} placeholder="e.g. Carprofen, Gabapentin" />
           </div>
         </div>
 
         {/* Equipment */}
         <div>
-          <label className={labelCls}>Available Equipment</label>
-          <div className="flex flex-wrap gap-2 mt-1">
+          <label className={labelCls} style={{ color: T.text }}>Available Equipment</label>
+          <div className="flex flex-wrap gap-2 mt-1.5">
             {EQUIPMENT_OPTIONS.map((eq) => (
-              <button
-                key={eq}
-                type="button"
-                onClick={() => toggleEquipment(eq)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
-                  form.equipment.includes(eq)
-                    ? "bg-[#0EA5E9] text-white border-[#0EA5E9]"
-                    : "bg-gray-50 text-gray-600 border-gray-200 hover:border-[#0EA5E9]"
-                }`}
-              >
+              <button key={eq} type="button" onClick={() => toggleEquipment(eq)}
+                className="px-3.5 py-2 rounded-full text-xs font-semibold transition-all"
+                style={{
+                  background: form.equipment.includes(eq) ? T.teal : "#F8FAFC",
+                  color: form.equipment.includes(eq) ? "#FFF" : T.muted,
+                  border: `1.5px solid ${form.equipment.includes(eq) ? T.teal : T.border}`,
+                }}>
                 {eq}
               </button>
             ))}
@@ -374,24 +347,21 @@ function IntakeForm({ onSubmit }) {
 
         {/* Goals & Notes */}
         <div>
-          <label className={labelCls}>Recovery Goals</label>
-          <textarea className={`${inputCls} h-20 resize-none`} value={form.goals} onChange={(e) => update("goals", e.target.value)} placeholder="e.g. Return to walking 30 minutes daily, climb stairs again..." />
+          <label className={labelCls} style={{ color: T.text }}>Recovery Goals</label>
+          <textarea className={`${inputCls} h-20 resize-none`} style={inputStyle} value={form.goals} onChange={(e) => update("goals", e.target.value)} placeholder="e.g. Return to walking 30 minutes daily, climb stairs again..." />
         </div>
         <div>
-          <label className={labelCls}>Additional Notes</label>
-          <textarea className={`${inputCls} h-20 resize-none`} value={form.additionalNotes} onChange={(e) => update("additionalNotes", e.target.value)} placeholder="Anything else B.E.A.U. should know..." />
+          <label className={labelCls} style={{ color: T.text }}>Additional Notes</label>
+          <textarea className={`${inputCls} h-20 resize-none`} style={inputStyle} value={form.additionalNotes} onChange={(e) => update("additionalNotes", e.target.value)} placeholder="Anything else B.E.A.U. should know..." />
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-[#0F4C81] text-white font-semibold py-3 rounded-xl hover:bg-[#0d3f6b] transition-colors text-base"
-        >
+        <button type="submit" className="w-full text-white font-bold py-3.5 rounded-xl text-base transition-all hover:shadow-lg"
+          style={{ background: `linear-gradient(135deg, ${T.navy}, ${T.blue})` }}>
           Start B.E.A.U. Home Session
         </button>
 
-        <p className="text-xs text-center text-gray-400 mt-2">
+        <p className="text-xs text-center" style={{ color: T.light }}>
           B.E.A.U. Home is a rehabilitation guide — not a substitute for veterinary care.
-          Always consult your veterinarian before starting any exercise program.
         </p>
       </form>
     </div>
@@ -403,14 +373,17 @@ function ChatMessage({ role, text }) {
   const isUser = role === "user";
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"} mb-4`}>
-      {!isUser && <div className="w-8 h-8 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-sm font-bold mr-2 flex-shrink-0 mt-1">B</div>}
-      <div
-        className={`max-w-[75%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-          isUser
-            ? "bg-[#0F4C81] text-white rounded-br-md"
-            : "bg-gray-100 text-gray-800 rounded-bl-md"
-        }`}
-      >
+      {!isUser && (
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold mr-3 flex-shrink-0 mt-1"
+          style={{ background: `linear-gradient(135deg, ${T.navy}, ${T.blue})` }}>
+          B
+        </div>
+      )}
+      <div className={`max-w-[75%] px-5 py-3.5 text-sm leading-relaxed whitespace-pre-wrap ${isUser ? "rounded-2xl rounded-br-md" : "rounded-2xl rounded-bl-md"}`}
+        style={{
+          background: isUser ? T.blue : "#F1F5F9",
+          color: isUser ? "#FFF" : T.text,
+        }}>
         {text}
       </div>
     </div>
@@ -418,93 +391,87 @@ function ChatMessage({ role, text }) {
 }
 
 // ─── Sidebar Panel ──────────────────────────────────────────────────────────
-function SidebarPanel({ activeTab, intake, messages }) {
+function SidebarPanel({ activeTab, intake, messages, onSuggest }) {
   const petName = intake?.petName || "your pet";
 
   if (activeTab === "plan") {
     return (
-      <div className="p-4 space-y-4">
-        <h3 className="font-semibold text-[#0F4C81]">Recovery Plan</h3>
-        <p className="text-sm text-gray-600">
-          {intake?.condition
-            ? `Active plan for ${petName} — ${intake.condition === "Other" ? intake.conditionOther : intake.condition}`
-            : "Complete the intake form to generate a plan."}
-        </p>
-        {intake?.condition && (
+      <div className="p-5 space-y-4">
+        <h3 className="font-bold text-sm" style={{ color: T.navy }}>Recovery Plan</h3>
+        {intake?.condition ? (
           <div className="space-y-3">
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <p className="text-xs font-medium text-blue-800 mb-1">Phase</p>
-              <p className="text-sm text-blue-700">Home Recovery — Active</p>
+            <div className="rounded-xl p-4" style={{ background: T.tealBg, border: `1px solid ${T.teal}22` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: T.teal }}>Patient</p>
+              <p className="text-sm font-semibold" style={{ color: T.navy }}>{petName}</p>
+              <p className="text-xs mt-0.5" style={{ color: T.muted }}>{intake.breed || intake.species} · {intake.age || "Age unknown"}</p>
             </div>
-            <div className="bg-green-50 border border-green-100 rounded-lg p-3">
-              <p className="text-xs font-medium text-green-800 mb-1">Focus</p>
-              <p className="text-sm text-green-700">Gentle mobilization & comfort</p>
+            <div className="rounded-xl p-4" style={{ background: T.greenBg, border: `1px solid ${T.green}22` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: T.green }}>Condition</p>
+              <p className="text-sm" style={{ color: T.text }}>{intake.condition === "Other" ? intake.conditionOther : intake.condition}</p>
             </div>
-            <div className="bg-amber-50 border border-amber-100 rounded-lg p-3">
-              <p className="text-xs font-medium text-amber-800 mb-1">Frequency</p>
-              <p className="text-sm text-amber-700">Ask B.E.A.U. for your schedule</p>
+            <div className="rounded-xl p-4" style={{ background: T.amberBg, border: `1px solid ${T.gold}22` }}>
+              <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: T.gold }}>Phase</p>
+              <p className="text-sm" style={{ color: T.text }}>Home Recovery — Active</p>
             </div>
+            {intake.mobility && (
+              <div className="rounded-xl p-4" style={{ background: "#F8FAFC", border: `1px solid ${T.border}` }}>
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-1" style={{ color: T.muted }}>Mobility</p>
+                <p className="text-sm" style={{ color: T.text }}>{intake.mobility}</p>
+              </div>
+            )}
           </div>
+        ) : (
+          <p className="text-sm" style={{ color: T.muted }}>Complete the intake form to generate a plan.</p>
         )}
       </div>
     );
   }
 
   if (activeTab === "progress") {
-    const sessionCount = messages.filter((m) => m.role === "user").length;
+    const questionCount = messages.filter((m) => m.role === "user").length;
+    const responseCount = messages.filter((m) => m.role === "assistant").length;
     return (
-      <div className="p-4 space-y-4">
-        <h3 className="font-semibold text-[#0F4C81]">Progress Tracker</h3>
+      <div className="p-5 space-y-4">
+        <h3 className="font-bold text-sm" style={{ color: T.navy }}>Progress</h3>
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gray-50 rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold text-[#0F4C81]">{sessionCount}</p>
-            <p className="text-xs text-gray-500">Questions Asked</p>
+          <div className="rounded-xl p-4 text-center" style={{ background: T.tealBg }}>
+            <p className="text-2xl font-extrabold" style={{ color: T.blue }}>{questionCount}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider mt-1" style={{ color: T.muted }}>Questions</p>
           </div>
-          <div className="bg-gray-50 rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold text-[#10B981]">1</p>
-            <p className="text-xs text-gray-500">Sessions</p>
+          <div className="rounded-xl p-4 text-center" style={{ background: T.greenBg }}>
+            <p className="text-2xl font-extrabold" style={{ color: T.green }}>{responseCount}</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider mt-1" style={{ color: T.muted }}>Responses</p>
           </div>
         </div>
-        <p className="text-xs text-gray-400">
-          Sign in to save progress across sessions and track {petName}'s recovery over time.
-        </p>
+        <div className="rounded-xl p-4" style={{ background: "#F8FAFC", border: `1px solid ${T.border}` }}>
+          <p className="text-xs" style={{ color: T.muted }}>
+            Sign in to save progress across sessions and track {petName}'s recovery over time.
+          </p>
+        </div>
       </div>
     );
   }
 
   if (activeTab === "guide") {
+    const tips = [
+      { icon: "🐾", title: "Getting Started", desc: "Ask B.E.A.U. for a daily exercise plan based on your pet's condition." },
+      { icon: "⏱️", title: "Session Length", desc: "Start with 5–10 minute sessions. Gradually increase as your pet builds stamina." },
+      { icon: "👀", title: "Watch For", desc: "Limping, whining, panting, or reluctance to continue means it's time to stop." },
+      { icon: "🚨", title: "Call Your Vet", desc: "For sudden changes, worsening symptoms, or any concerns — always consult your vet." },
+    ];
     return (
-      <div className="p-4 space-y-4">
-        <h3 className="font-semibold text-[#0F4C81]">Quick Guide</h3>
-        <div className="space-y-3 text-sm">
-          <div className="flex gap-2">
-            <span className="text-lg">🐾</span>
-            <div>
-              <p className="font-medium text-gray-700">Getting Started</p>
-              <p className="text-gray-500 text-xs">Ask B.E.A.U. for a daily exercise plan based on your pet's condition.</p>
+      <div className="p-5 space-y-4">
+        <h3 className="font-bold text-sm" style={{ color: T.navy }}>Quick Guide</h3>
+        <div className="space-y-3">
+          {tips.map((t, i) => (
+            <div key={i} className="flex gap-3 rounded-xl p-3" style={{ background: "#F8FAFC" }}>
+              <span className="text-xl flex-shrink-0">{t.icon}</span>
+              <div>
+                <p className="text-sm font-semibold" style={{ color: T.text }}>{t.title}</p>
+                <p className="text-xs mt-0.5" style={{ color: T.muted }}>{t.desc}</p>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <span className="text-lg">⚡</span>
-            <div>
-              <p className="font-medium text-gray-700">Exercise Tips</p>
-              <p className="text-gray-500 text-xs">Ask about proper form, duration, or modifications for specific exercises.</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <span className="text-lg">🚨</span>
-            <div>
-              <p className="font-medium text-gray-700">When to Stop</p>
-              <p className="text-gray-500 text-xs">If your pet shows signs of pain, limping, or reluctance — stop and rest.</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <span className="text-lg">📞</span>
-            <div>
-              <p className="font-medium text-gray-700">Call Your Vet</p>
-              <p className="text-gray-500 text-xs">For sudden changes, worsening symptoms, or any concerns — always consult your vet.</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     );
@@ -520,14 +487,13 @@ function SidebarPanel({ activeTab, intake, messages }) {
       `What warm-up should I do before exercises?`,
     ];
     return (
-      <div className="p-4 space-y-4">
-        <h3 className="font-semibold text-[#0F4C81]">Suggested Questions</h3>
+      <div className="p-5 space-y-4">
+        <h3 className="font-bold text-sm" style={{ color: T.navy }}>Suggested Questions</h3>
         <div className="space-y-2">
           {suggestions.map((s, i) => (
-            <button
-              key={i}
-              className="w-full text-left text-sm px-3 py-2.5 rounded-lg bg-gray-50 hover:bg-[#0EA5E9]/10 text-gray-700 hover:text-[#0F4C81] transition-colors border border-transparent hover:border-[#0EA5E9]/30"
-            >
+            <button key={i} onClick={() => onSuggest(s)}
+              className="w-full text-left text-sm px-4 py-3 rounded-xl transition-all hover:shadow-sm"
+              style={{ background: "#F8FAFC", color: T.text, border: `1px solid ${T.border}` }}>
               {s}
             </button>
           ))}
@@ -540,193 +506,129 @@ function SidebarPanel({ activeTab, intake, messages }) {
 }
 
 // ─── Main Component ─────────────────────────────────────────────────────────
-export default function BeauHomeView({ setView }) {
+export default function BeauHomeView() {
   const [intake, setIntake] = useState(null);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [sidebarTab, setSidebarTab] = useState("plan");
-  const [showAuth, setShowAuth] = useState(null); // null | "login" | "signup"
+  const [showAuth, setShowAuth] = useState(null);
   const [user, setUser] = useState(null);
   const chatEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Auto-scroll chat
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
+  useEffect(() => { if (intake && inputRef.current) inputRef.current.focus(); }, [intake]);
 
-  // Focus input after intake
-  useEffect(() => {
-    if (intake && inputRef.current) inputRef.current.focus();
-  }, [intake]);
-
-  // Send initial greeting after intake
   const handleIntakeSubmit = useCallback(async (formData) => {
     setIntake(formData);
     const systemPrompt = buildSystemPrompt(formData);
     const initialMessages = [{ role: "user", content: `Hi B.E.A.U.! I just filled out ${formData.petName}'s intake form. Can you introduce yourself and help us get started?` }];
-
     setMessages([{ role: "user", text: initialMessages[0].content }]);
     setLoading(true);
-
     try {
       const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: initialMessages, systemPrompt }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setMessages((prev) => [...prev, { role: "assistant", text: data.text }]);
-    } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", text: "I'm sorry — I'm having trouble connecting right now. Please try again in a moment." },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", text: "I'm sorry — I'm having trouble connecting right now. Please try again in a moment." }]);
+    } finally { setLoading(false); }
   }, []);
 
-  // Send a chat message
   async function handleSend(e) {
     e?.preventDefault();
     const trimmed = input.trim();
     if (!trimmed || loading) return;
-
     const userMsg = { role: "user", text: trimmed };
-    const updatedMessages = [...messages, userMsg];
-    setMessages(updatedMessages);
+    const updated = [...messages, userMsg];
+    setMessages(updated);
     setInput("");
     setLoading(true);
-
-    // Build API messages array (convert text → content)
-    const apiMessages = updatedMessages.map((m) => ({
-      role: m.role,
-      content: m.text,
-    }));
-
+    const apiMessages = updated.map((m) => ({ role: m.role, content: m.text }));
     try {
       const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: apiMessages,
-          systemPrompt: buildSystemPrompt(intake),
-        }),
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: apiMessages, systemPrompt: buildSystemPrompt(intake) }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
       setMessages((prev) => [...prev, { role: "assistant", text: data.text }]);
-    } catch (err) {
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", text: "I'm sorry — something went wrong. Please try again." },
-      ]);
-    } finally {
-      setLoading(false);
-    }
+    } catch {
+      setMessages((prev) => [...prev, { role: "assistant", text: "I'm sorry — something went wrong. Please try again." }]);
+    } finally { setLoading(false); }
   }
 
-  function handleAuth({ email, name, mode }) {
-    setUser({ email, name });
-    setShowAuth(null);
-  }
+  function handleSuggest(text) { setInput(text); inputRef.current?.focus(); }
+  function handleAuth({ email, name }) { setUser({ email, name }); setShowAuth(null); }
 
-  // ─── Intake Screen ─────────────────────────────────────────────────────
+  // ─── Intake Screen ──────────────────────────────────────────────
   if (!intake) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#f0f7ff] to-white">
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b bg-white/80 backdrop-blur-sm">
-          <button onClick={() => setView("dashboard")} className="text-sm text-gray-500 hover:text-[#0F4C81] transition-colors">
-            &larr; Back to K9 Rehab Pro
-          </button>
-          <div className="flex items-center gap-3">
-            {user ? (
-              <span className="text-sm text-gray-600">
-                Hi, <strong>{user.name}</strong>
-              </span>
-            ) : (
-              <>
-                <button onClick={() => setShowAuth("login")} className="text-sm text-[#0EA5E9] font-medium hover:underline">
-                  Sign In
-                </button>
-                <button
-                  onClick={() => setShowAuth("signup")}
-                  className="text-sm bg-[#0F4C81] text-white px-4 py-1.5 rounded-lg hover:bg-[#0d3f6b] transition-colors"
-                >
-                  Sign Up
-                </button>
-              </>
-            )}
-          </div>
+      <div className="min-h-screen" style={{ background: `linear-gradient(180deg, ${T.bg} 0%, #FFFFFF 100%)` }}>
+        <div className="flex items-center justify-end px-6 py-3" style={{ borderBottom: `1px solid ${T.border}`, background: "rgba(255,255,255,0.8)", backdropFilter: "blur(8px)" }}>
+          {user ? (
+            <span className="text-sm" style={{ color: T.muted }}>Hi, <strong style={{ color: T.text }}>{user.name}</strong></span>
+          ) : (
+            <div className="flex items-center gap-3">
+              <button onClick={() => setShowAuth("login")} className="text-sm font-medium hover:underline" style={{ color: T.teal }}>Sign In</button>
+              <button onClick={() => setShowAuth("signup")} className="text-sm text-white px-4 py-1.5 rounded-lg" style={{ background: T.blue }}>Sign Up</button>
+            </div>
+          )}
         </div>
         <IntakeForm onSubmit={handleIntakeSubmit} />
-        {showAuth && (
-          <AuthModal
-            mode={showAuth}
-            onClose={() => setShowAuth(null)}
-            onSwitch={() => setShowAuth(showAuth === "login" ? "signup" : "login")}
-            onAuth={handleAuth}
-          />
-        )}
+        {showAuth && <AuthModal mode={showAuth} onClose={() => setShowAuth(null)} onSwitch={() => setShowAuth(showAuth === "login" ? "signup" : "login")} onAuth={handleAuth} />}
       </div>
     );
   }
 
-  // ─── Chat Screen ────────────────────────────────────────────────────────
+  // ─── Chat Screen ────────────────────────────────────────────────
   return (
-    <div className="flex h-screen bg-[#f8fafc]">
-      {/* Main chat area */}
+    <div className="flex h-screen" style={{ background: T.bg }}>
+      {/* Main chat */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b bg-white">
+        <div className="flex items-center justify-between px-6 py-3" style={{ background: T.card, borderBottom: `1px solid ${T.border}` }}>
           <div className="flex items-center gap-3">
-            <button onClick={() => setView("dashboard")} className="text-gray-400 hover:text-[#0F4C81] transition-colors">
-              &larr;
-            </button>
-            <div className="w-9 h-9 rounded-full bg-[#0F4C81] text-white flex items-center justify-center font-bold text-sm">B</div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm"
+              style={{ background: `linear-gradient(135deg, ${T.navy}, ${T.blue})` }}>
+              B
+            </div>
             <div>
-              <h1 className="font-semibold text-[#0F4C81] text-sm">B.E.A.U. Home</h1>
-              <p className="text-xs text-gray-400">
-                Helping {intake.petName} recover{intake.condition ? ` — ${intake.condition === "Other" ? intake.conditionOther : intake.condition}` : ""}
+              <h1 className="font-bold text-sm" style={{ color: T.navy }}>B.E.A.U. Home</h1>
+              <p className="text-xs" style={{ color: T.muted }}>
+                {intake.petName}{intake.condition ? ` · ${intake.condition === "Other" ? intake.conditionOther : intake.condition}` : ""}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => { setIntake(null); setMessages([]); }}
-              className="text-xs text-gray-400 hover:text-red-500 transition-colors"
-            >
+          <div className="flex items-center gap-4">
+            <button onClick={() => { setIntake(null); setMessages([]); }}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors" style={{ color: T.muted, background: "#F8FAFC", border: `1px solid ${T.border}` }}>
               New Session
             </button>
             {user ? (
-              <span className="text-xs text-gray-500">
-                {user.name}
-              </span>
+              <span className="text-xs" style={{ color: T.muted }}>{user.name}</span>
             ) : (
-              <button onClick={() => setShowAuth("login")} className="text-xs text-[#0EA5E9] font-medium hover:underline">
-                Sign In
-              </button>
+              <button onClick={() => setShowAuth("login")} className="text-xs font-medium hover:underline" style={{ color: T.teal }}>Sign In</button>
             )}
           </div>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
-          {messages.map((m, i) => (
-            <ChatMessage key={i} role={m.role} text={m.text} />
-          ))}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          {messages.map((m, i) => <ChatMessage key={i} role={m.role} text={m.text} />)}
           {loading && (
             <div className="flex justify-start mb-4">
-              <div className="w-8 h-8 rounded-full bg-[#0F4C81] text-white flex items-center justify-center text-sm font-bold mr-2 flex-shrink-0">B</div>
-              <div className="bg-gray-100 px-4 py-3 rounded-2xl rounded-bl-md">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold mr-3 flex-shrink-0"
+                style={{ background: `linear-gradient(135deg, ${T.navy}, ${T.blue})` }}>B</div>
+              <div className="px-5 py-4 rounded-2xl rounded-bl-md" style={{ background: "#F1F5F9" }}>
                 <div className="flex gap-1.5">
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: T.light, animationDelay: "0ms" }} />
+                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: T.light, animationDelay: "150ms" }} />
+                  <span className="w-2 h-2 rounded-full animate-bounce" style={{ background: T.light, animationDelay: "300ms" }} />
                 </div>
               </div>
             </div>
@@ -735,64 +637,46 @@ export default function BeauHomeView({ setView }) {
         </div>
 
         {/* Input */}
-        <form onSubmit={handleSend} className="px-6 py-4 border-t bg-white">
+        <form onSubmit={handleSend} className="px-6 py-4" style={{ background: T.card, borderTop: `1px solid ${T.border}` }}>
           <div className="flex gap-3 items-center">
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={`Ask B.E.A.U. about ${intake.petName}'s recovery...`}
-              className="flex-1 border border-gray-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-[#0EA5E9] focus:border-transparent outline-none"
-              disabled={loading}
-            />
-            <button
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="bg-[#0F4C81] text-white px-5 py-3 rounded-xl font-medium text-sm hover:bg-[#0d3f6b] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
+            <input ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)}
+              placeholder={`Ask B.E.A.U. about ${intake.petName}'s recovery...`} disabled={loading}
+              className="flex-1 rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-sky-400"
+              style={{ border: `1px solid ${T.border}`, color: T.text }} />
+            <button type="submit" disabled={loading || !input.trim()}
+              className="text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-lg"
+              style={{ background: `linear-gradient(135deg, ${T.navy}, ${T.blue})` }}>
               Send
             </button>
           </div>
-          <p className="text-xs text-gray-400 text-center mt-2">
+          <p className="text-xs text-center mt-2.5" style={{ color: T.light }}>
             B.E.A.U. Home is a guide, not a veterinarian. Always confirm recommendations with your vet.
           </p>
         </form>
       </div>
 
       {/* Sidebar */}
-      <div className="w-72 border-l bg-white flex flex-col hidden lg:flex">
-        {/* Sidebar tabs */}
-        <div className="flex border-b">
+      <div className="w-80 hidden lg:flex flex-col" style={{ background: T.card, borderLeft: `1px solid ${T.border}` }}>
+        <div className="flex" style={{ borderBottom: `1px solid ${T.border}` }}>
           {SIDEBAR_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setSidebarTab(tab.key)}
-              className={`flex-1 py-3 text-center text-xs font-medium transition-colors ${
-                sidebarTab === tab.key
-                  ? "text-[#0F4C81] border-b-2 border-[#0F4C81]"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
+            <button key={tab.key} onClick={() => setSidebarTab(tab.key)}
+              className="flex-1 py-3.5 text-center text-xs font-semibold transition-all"
+              style={{
+                color: sidebarTab === tab.key ? T.blue : T.light,
+                borderBottom: sidebarTab === tab.key ? `2px solid ${T.blue}` : "2px solid transparent",
+                background: sidebarTab === tab.key ? T.tealBg : "transparent",
+              }}>
               <span className="block text-base mb-0.5">{tab.icon}</span>
               {tab.label}
             </button>
           ))}
         </div>
-        {/* Tab content */}
         <div className="flex-1 overflow-y-auto">
-          <SidebarPanel activeTab={sidebarTab} intake={intake} messages={messages} />
+          <SidebarPanel activeTab={sidebarTab} intake={intake} messages={messages} onSuggest={handleSuggest} />
         </div>
       </div>
 
-      {/* Auth modal */}
-      {showAuth && (
-        <AuthModal
-          mode={showAuth}
-          onClose={() => setShowAuth(null)}
-          onSwitch={() => setShowAuth(showAuth === "login" ? "signup" : "login")}
-          onAuth={handleAuth}
-        />
-      )}
+      {showAuth && <AuthModal mode={showAuth} onClose={() => setShowAuth(null)} onSwitch={() => setShowAuth(showAuth === "login" ? "signup" : "login")} onAuth={handleAuth} />}
     </div>
   );
 }
