@@ -4,7 +4,22 @@
 
 body {
   background: #0C0C0E;
-  color: #ECECEC;
+  color: #F5F5F5;
+  font-weight: 300;              /* lighter default per brand feedback */
+  letter-spacing: 0.012em;       /* airier for light weights */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Soften default "bold" so <strong> feels medium, not heavy — reads better on dark bg */
+strong, b { font-weight: 500; }
+h1, h2, h3, h4, h5, h6 { font-weight: 400; letter-spacing: -0.01em; }
+
+/* Respect OS-level reduced-motion preference for all animations */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
 }

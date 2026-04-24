@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 
 // ── TOKENS ──────────────────────────────────────────────────────────
+// Typography lightened per brand direction: near-white text, lighter weights
+// across the board, cyan as primary accent on dark. Sunrise gradient kept
+// as action/CTA treatment only.
 const C = {
   bg:           "#0C0C0E",
   sidebar:      "#111113",
@@ -8,9 +11,9 @@ const C = {
   surfaceHigh:  "#1C1C1F",
   border:       "#232326",
   borderSub:    "#1C1C1F",
-  text:         "#ECECEC",
-  textSub:      "#9A9A9F",
-  textMuted:    "#55555C",
+  text:         "#F5F5F5",   // was #ECECEC — brighter, more white
+  textSub:      "#BFBFC4",   // was #9A9A9F — lighter secondary
+  textMuted:    "#6C6C74",   // was #55555C — lifted from near-black
   sunrise:      "linear-gradient(135deg, #FF3B3B 0%, #FF8C00 50%, #FFE600 100%)",
   sunriseSolid: "#FF8C00",
   dog:          "#39FF14",
@@ -105,19 +108,64 @@ PLAN FORMAT:
 PERSONALITY: Warm, knowledgeable friend. Use ${n}'s name constantly. Celebrate small wins.`;
 }
 
-// ── API CALL ─────────────────────────────────────────────────────────
-async function callBEAU(systemPrompt, messages) {
-  try {
-    const res = await fetch("/api/chat-home", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, systemPrompt }),
-    });
-    const d = await res.json();
-    return d.text || "Something went wrong. Please try again.";
-  } catch {
-    return "Connection issue. Please try again.";
+// ── API CALL (SSE streaming) ─────────────────────────────────────────
+// Streams chunks from /api/chat-home. Caller passes `onChunk(fullTextSoFar)`
+// which fires on every text_delta so the UI can render word-by-word.
+// Returns the final assembled text.
+async function callBEAUStream(systemPrompt, messages, onChunk) {
+  const res = await fetch("/api/chat-home", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages, systemPrompt }),
+  });
+
+  if (!res.ok) {
+    // Server sent JSON error (e.g. 429 rate limit) not a stream
+    let msg = "Connection issue. Please try again.";
+    try {
+      const j = await res.json();
+      if (j?.error) msg = j.error;
+    } catch { /* ignore */ }
+    throw new Error(msg);
   }
+
+  if (!res.body) throw new Error("No response body from server.");
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let full = "";
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    // SSE frames are separated by double newlines
+    const frames = buffer.split("\n\n");
+    buffer = frames.pop() || "";
+
+    for (const frame of frames) {
+      const line = frame.trim();
+      if (!line.startsWith("data:")) continue;
+      const payload = line.slice(5).trim();
+      if (payload === "[DONE]") return full;
+      try {
+        const data = JSON.parse(payload);
+        if (data.error) throw new Error(data.error);
+        if (typeof data.text === "string") {
+          full += data.text;
+          onChunk?.(full);
+        }
+      } catch (e) {
+        // Re-throw real errors; swallow partial-JSON parse errors
+        if (e instanceof SyntaxError) continue;
+        throw e;
+      }
+    }
+  }
+  return full;
 }
 
 // ── SUB-COMPONENTS ───────────────────────────────────────────────────
@@ -216,15 +264,39 @@ export default function BeauHome() {
     const next = [...base, { role: "user", content: userText }];
     setApiMsgs(next);
     setTyping(true);
-    const reply = await callBEAU(buildPrompt(pd), next);
-    setTyping(false);
-    const full = [...next, { role: "assistant", content: reply }];
-    setApiMsgs(full);
-    addMsg({ role: "beau", text: reply });
 
-    if (reply.includes("MORNING ROUTINE") || reply.includes("EVENING ROUTINE")) {
+    // Placeholder message we'll mutate as chunks arrive
+    const placeholderId = Date.now() + Math.random();
+    let started = false;
+    let finalReply = "";
+
+    try {
+      finalReply = await callBEAUStream(buildPrompt(pd), next, (textSoFar) => {
+        if (!started) {
+          setTyping(false);
+          setMsgs(p => [...p, { id: placeholderId, role: "beau", text: textSoFar }]);
+          started = true;
+        } else {
+          setMsgs(p => p.map(m => m.id === placeholderId ? { ...m, text: textSoFar } : m));
+        }
+      });
+    } catch (err) {
+      setTyping(false);
+      const errMsg = err?.message || "Connection issue. Please try again.";
+      if (!started) {
+        setMsgs(p => [...p, { id: placeholderId, role: "beau", text: errMsg }]);
+      } else {
+        setMsgs(p => p.map(m => m.id === placeholderId ? { ...m, text: (finalReply || m.text) + `\n\n*[${errMsg}]*` } : m));
+      }
+      return;
+    }
+
+    const full = [...next, { role: "assistant", content: finalReply }];
+    setApiMsgs(full);
+
+    if (finalReply.includes("MORNING ROUTINE") || finalReply.includes("EVENING ROUTINE")) {
       const exs = [];
-      reply.split("\n").forEach(line => {
+      finalReply.split("\n").forEach(line => {
         const m = line.match(/^\*\*\d+\.\s(.+?)\*\*/);
         if (m) exs.push({ id: Date.now() + Math.random(), name: m[1].split("|")[0].trim(), env: line.includes("🌿") ? "🌿 Outdoor" : "🏠 Indoor", tag: condition.split(" ")[0] || "Rehab" });
       });
@@ -261,7 +333,7 @@ export default function BeauHome() {
     <div style={{ display: "flex", height: "100vh", background: C.bg, color: C.text, fontFamily: "'Lora', Georgia, serif", overflow: "hidden" }}>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 0px; }
         @keyframes fadeSlideUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
