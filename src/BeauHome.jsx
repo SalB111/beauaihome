@@ -2,21 +2,22 @@ import { useState, useRef, useEffect } from "react";
 import { useBeauListen } from "./hooks/useBeauListen.js";
 import { useBeauVoice } from "./hooks/useBeauVoice.js";
 import AnatomyViewer3D from "./components/AnatomyViewer3D.jsx";
+import WeightCalculator from "./components/WeightCalculator.jsx";
 
 // ── TOKENS ──────────────────────────────────────────────────────────
 // Typography lightened per brand direction: near-white text, lighter weights
 // across the board, cyan as primary accent on dark. Sunrise gradient kept
 // as action/CTA treatment only.
 const C = {
-  bg:           "#0C0C0E",
-  sidebar:      "#111113",
-  surface:      "#161618",
-  surfaceHigh:  "#1C1C1F",
-  border:       "#232326",
-  borderSub:    "#1C1C1F",
-  text:         "#F5F5F5",   // was #ECECEC — brighter, more white
-  textSub:      "#BFBFC4",   // was #9A9A9F — lighter secondary
-  textMuted:    "#6C6C74",   // was #55555C — lifted from near-black
+  bg:           "#18181C",   // +25% lighter
+  sidebar:      "#1E1E22",   // +25% lighter
+  surface:      "#242428",   // +25% lighter
+  surfaceHigh:  "#2A2A2F",   // +25% lighter
+  border:       "#363639",   // +25% lighter
+  borderSub:    "#2A2A2F",   // +25% lighter
+  text:         "#F8F8F8",
+  textSub:      "#CECECE",   // brighter secondaries
+  textMuted:    "#909098",   // was #6C6C74 — much more readable
   sunrise:      "linear-gradient(135deg, #FF3B3B 0%, #FF8C00 50%, #FFE600 100%)",
   sunriseSolid: "#FF8C00",
   dog:          "#39FF14",
@@ -424,7 +425,7 @@ export default function BeauHome() {
         </div>
 
         <div style={{ display:"flex", borderBottom:`1px solid ${C.borderSub}` }}>
-          {[{id:"exercises",icon:"💪",label:"Plan"},{id:"progress",icon:"📈",label:"Progress"},{id:"anatomy",icon:"🩻",label:"3D"},{id:"guide",icon:"❓",label:"Guide"},{id:"suggest",icon:"💡",label:"Suggest"}].map(t => (
+          {[{id:"exercises",icon:"💪",label:"Plan"},{id:"progress",icon:"📈",label:"Progress"},{id:"anatomy",icon:"🩻",label:"3D"},{id:"weight",icon:"⚖️",label:"Weight"},{id:"guide",icon:"❓",label:"Guide"},{id:"suggest",icon:"💡",label:"Suggest"}].map(t => (
             <button key={t.id} className="stab" onClick={() => setSidebarTab(t.id)} style={{ color:sidebarTab===t.id ? accent : C.textMuted, borderBottom:sidebarTab===t.id ? `2px solid ${accent}` : "2px solid transparent" }}>
               <div style={{ fontSize:14, marginBottom:3 }}>{t.icon}</div>{t.label}
             </button>
@@ -491,6 +492,10 @@ export default function BeauHome() {
               💡 <strong style={{color:C.cat}}>Tip:</strong> drag with one finger to rotate, pinch with two to zoom. The model is hosted by veterinary anatomy educators — what you see is anatomically accurate.
             </div>
           </>}
+
+          {sidebarTab === "weight" && (
+            <WeightCalculator petName={petName} species={species} />
+          )}
 
           {sidebarTab === "guide" && <>
             <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:10, color:C.textMuted, letterSpacing:"1.2px", textTransform:"uppercase", marginBottom:14 }}>How to Use</div>

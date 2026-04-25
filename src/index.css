@@ -3,7 +3,7 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  background: #0C0C0E;
+  background: #18181C;
   color: #F5F5F5;
   font-weight: 300;              /* lighter default per brand feedback */
   letter-spacing: 0.012em;       /* airier for light weights */
