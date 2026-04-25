@@ -557,13 +557,14 @@ export default function BeauHome() {
               aria-label={voiceOn ? "Mute B.E.A.U. voice" : "Read replies aloud"}
               title={voiceOn ? "Mute B.E.A.U." : "Read replies aloud"}
               style={{
-                width:34, height:34, borderRadius:"50%", border:"none",
-                background: voiceOn ? `${C.cat}22` : "transparent",
+                width:36, height:36, borderRadius:"50%", border:"none",
+                background: voiceOn ? `${C.cat}33` : C.surfaceHigh,
                 color: voiceOn ? C.cat : C.textMuted,
                 display:"flex", alignItems:"center", justifyContent:"center",
                 cursor:"pointer", marginRight:8,
                 transition:"all .15s",
-                animation: speaking ? "pulse 1.4s ease-in-out infinite" : "none",
+                boxShadow: voiceOn && !speaking ? `0 0 12px ${C.cat}66` : "none",
+                animation: speaking ? "beau-ring-cyan 1.5s ease-out infinite" : "none",
               }}
             >
               {voiceOn ? (
@@ -701,8 +702,7 @@ export default function BeauHome() {
                     display:"flex", alignItems:"center", justifyContent:"center",
                     cursor: phase === "intake" ? "default" : "pointer",
                     opacity: phase === "intake" ? 0.4 : 1,
-                    boxShadow: listening ? "0 0 14px rgba(255,59,59,0.55)" : "none",
-                    animation: listening ? "pulse 1.4s ease-in-out infinite" : "none",
+                    animation: listening ? "beau-ring-red 1.5s ease-out infinite" : "none",
                     transition: "background-color .15s",
                   }}
                 >

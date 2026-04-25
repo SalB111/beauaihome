@@ -16,10 +16,24 @@ body {
 strong, b { font-weight: 500; }
 h1, h2, h3, h4, h5, h6 { font-weight: 400; letter-spacing: -0.01em; }
 
-/* Respect OS-level reduced-motion preference for all animations */
+/* Voice I/O state pulses — must remain visible even if OS has reduce-motion on,
+   because they communicate critical app state ("listening", "speaking"). */
+@keyframes beau-ring-red {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 59, 59, 0.65); }
+  70%  { box-shadow: 0 0 0 12px rgba(255, 59, 59, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 59, 59, 0); }
+}
+@keyframes beau-ring-cyan {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.55); }
+  70%  { box-shadow: 0 0 0 10px rgba(0, 240, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0); }
+}
+
+/* Respect OS-level reduce-motion for DECORATIVE animations only — message
+   fade-in. Functional state feedback (mic listening, BEAU speaking) is exempt
+   so the user always knows what the app is doing. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    transition-duration: 0.001ms !important;
+  .msg-in {
+    animation: none !important;
   }
 }
