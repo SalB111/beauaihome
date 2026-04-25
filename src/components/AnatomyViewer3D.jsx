@@ -48,14 +48,14 @@ const ATLAS = {
 
 // ── 3D colour palette — dark B.E.A.U. theme ─────────────────────────────
 const COL = {
-  body:      0x0d2a44,   // deep navy — body silhouette
-  bone:      0x0e3a55,   // slightly brighter for bones
-  default:   0x1a4060,   // dim blue — inactive muscle
-  primary:   0x00b8d4,   // cyan teal — primary
-  secondary: 0xf59e0b,   // amber — secondary
-  surgical:  0xef4444,   // red — surgical site
-  joint:     0x0891b2,   // bright teal — joints
-  hover:     0x00f0ff,   // bright cyan — hover
+  body:      0x1a5280,   // medium navy — body silhouette (+50%)
+  bone:      0x1e6080,   // brighter slate-blue bones (+50%)
+  default:   0x2e6e99,   // visible blue — inactive muscle (+50%)
+  primary:   0x00d4f0,   // bright cyan — primary
+  secondary: 0xfbbf24,   // bright amber — secondary
+  surgical:  0xf87171,   // bright red — surgical site
+  joint:     0x0fb8d8,   // vivid teal — joints (+50%)
+  hover:     0x7ff5ff,   // super-bright cyan — hover
 };
 
 // ── Canine body builder ──────────────────────────────────────────────────
@@ -64,7 +64,7 @@ function buildCanineBody(scene, meshMap) {
   Object.entries(COL).forEach(([k, v]) => {
     mats[k] = new THREE.MeshPhongMaterial({
       color: v, transparent: true,
-      opacity: k === "body" ? 0.3 : k === "bone" ? 0.55 : 0.85,
+      opacity: k === "body" ? 0.55 : k === "bone" ? 0.8 : 0.95,
       shininess: k === "body" ? 15 : 70,
     });
   });
@@ -157,7 +157,7 @@ function buildFelineBody(scene, meshMap) {
   Object.entries(COL).forEach(([k, v]) => {
     mats[k] = new THREE.MeshPhongMaterial({
       color: v, transparent: true,
-      opacity: k === "body" ? 0.3 : k === "bone" ? 0.55 : 0.85,
+      opacity: k === "body" ? 0.55 : k === "bone" ? 0.8 : 0.95,
       shininess: k === "body" ? 15 : 70,
     });
   });
@@ -265,7 +265,7 @@ export default function AnatomyViewer3D({ species = "dog", height = 380 }) {
     Object.values(meshMap).flat().forEach(m => {
       m.material.color.setHex(COL.default);
       m.material.emissive.setHex(0x000000);
-      m.material.opacity = 0.85;
+      m.material.opacity = 0.95;
     });
   };
 
@@ -365,8 +365,8 @@ export default function AnatomyViewer3D({ species = "dog", height = 380 }) {
     }
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x050a14);
-    scene.fog = new THREE.FogExp2(0x050a14, 0.15);
+    scene.background = new THREE.Color(0x0a1628);
+    scene.fog = new THREE.FogExp2(0x0a1628, 0.12);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
@@ -380,15 +380,15 @@ export default function AnatomyViewer3D({ species = "dog", height = 380 }) {
     mountRef.current.appendChild(renderer.domElement);
     rendRef.current = renderer;
 
-    // Lights — cooler, bluer for dark theme
-    scene.add(new THREE.AmbientLight(0x0a1a2e, 0.8));
-    const key = new THREE.DirectionalLight(0x4488ff, 1.1);
+    // Lights — brightened 50%
+    scene.add(new THREE.AmbientLight(0x6699cc, 1.2));
+    const key = new THREE.DirectionalLight(0xffffff, 1.8);
     key.position.set(2, 3, 2); key.castShadow = true;
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0x00b8d4, 0.5);
+    const fill = new THREE.DirectionalLight(0x44ccee, 1.0);
     fill.position.set(-2, 1, -1);
     scene.add(fill);
-    const rim = new THREE.DirectionalLight(0x00f0ff, 0.3);
+    const rim = new THREE.DirectionalLight(0x00f0ff, 0.6);
     rim.position.set(0, -2, -2);
     scene.add(rim);
 
