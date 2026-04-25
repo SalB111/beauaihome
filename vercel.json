@@ -16,7 +16,7 @@
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://static.sketchfab.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' blob:; connect-src 'self' https://*.supabase.co https://api.anthropic.com wss://*.supabase.co; frame-src https://sketchfab.com; worker-src 'self' blob:;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://static.sketchfab.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; media-src 'self' blob:; connect-src 'self' https://*.supabase.co https://api.anthropic.com https://*.sketchfab.com wss://*.supabase.co; frame-src https://sketchfab.com https://*.sketchfab.com; worker-src 'self' blob:;"
         }
       ]
     },

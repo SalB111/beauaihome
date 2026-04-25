@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useBeauListen } from "./hooks/useBeauListen.js";
 import { useBeauVoice } from "./hooks/useBeauVoice.js";
+import AnatomyViewer3D from "./components/AnatomyViewer3D.jsx";
 
 // ── TOKENS ──────────────────────────────────────────────────────────
 // Typography lightened per brand direction: near-white text, lighter weights
@@ -423,7 +424,7 @@ export default function BeauHome() {
         </div>
 
         <div style={{ display:"flex", borderBottom:`1px solid ${C.borderSub}` }}>
-          {[{id:"exercises",icon:"💪",label:"Plan"},{id:"progress",icon:"📈",label:"Progress"},{id:"guide",icon:"❓",label:"Guide"},{id:"suggest",icon:"💡",label:"Suggest"}].map(t => (
+          {[{id:"exercises",icon:"💪",label:"Plan"},{id:"progress",icon:"📈",label:"Progress"},{id:"anatomy",icon:"🩻",label:"3D"},{id:"guide",icon:"❓",label:"Guide"},{id:"suggest",icon:"💡",label:"Suggest"}].map(t => (
             <button key={t.id} className="stab" onClick={() => setSidebarTab(t.id)} style={{ color:sidebarTab===t.id ? accent : C.textMuted, borderBottom:sidebarTab===t.id ? `2px solid ${accent}` : "2px solid transparent" }}>
               <div style={{ fontSize:14, marginBottom:3 }}>{t.icon}</div>{t.label}
             </button>
@@ -476,6 +477,19 @@ export default function BeauHome() {
                 <button onClick={() => setShowAuth(true)} style={{ padding:"7px 18px", background:C.sunrise, border:"none", borderRadius:20, color:"#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:12, cursor:"pointer" }}>Sign In →</button>
               </div>
             )}
+          </>}
+
+          {sidebarTab === "anatomy" && <>
+            <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:10, color:C.textMuted, letterSpacing:"1.2px", textTransform:"uppercase", marginBottom:12 }}>
+              {petName ? `${petName}'s Anatomy` : "3D Anatomy Viewer"}
+            </div>
+            <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:C.textSub, lineHeight:1.7, marginBottom:14 }}>
+              Rotate, zoom, and explore the {species === "cat" ? "feline" : "canine"} skeleton. Useful for understanding which joints and structures B.E.A.U. is targeting in {petName ? `${petName}'s` : "your pet's"} plan.
+            </div>
+            <AnatomyViewer3D species={species} height={340} />
+            <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:10, color:C.textMuted, lineHeight:1.6, marginTop:10, padding:"10px 12px", background:"rgba(0,240,255,0.04)", borderRadius:8 }}>
+              💡 <strong style={{color:C.cat}}>Tip:</strong> drag with one finger to rotate, pinch with two to zoom. The model is hosted by veterinary anatomy educators — what you see is anatomically accurate.
+            </div>
           </>}
 
           {sidebarTab === "guide" && <>
