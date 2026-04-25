@@ -178,9 +178,10 @@ export default function WeightCalculator({ petName = "", species = "dog" }) {
           placeholder={unit === "lbs" ? "e.g. 65" : "e.g. 29.5"}
           style={{
             width: "100%", padding: "9px 12px", borderRadius: 8, fontSize: 13,
-            background: "#050f1a", border: "1px solid #0d2a3a", color: "#e2e8f0",
+            background: "#0d1a28", border: "1px solid rgba(255,72,10,0.38)", color: "#e2e8f0",
             outline: "none", boxSizing: "border-box",
             fontFamily: "'DM Sans', sans-serif",
+            boxShadow: "0 0 0 1px rgba(255,72,10,0.22), 0 0 10px rgba(255,72,10,0.10)",
           }}
         />
       </div>

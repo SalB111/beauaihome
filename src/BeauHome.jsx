@@ -379,16 +379,16 @@ export default function BeauHome() {
         .msg-in { animation: fadeSlideUp .32s cubic-bezier(.22,1,.36,1) forwards; }
         .dot { display:inline-block; width:7px; height:7px; border-radius:50%; background:${C.textMuted}; animation:pulse 1.4s ease-in-out infinite; }
         .dot:nth-child(2){animation-delay:.2s;} .dot:nth-child(3){animation-delay:.4s;}
-        .fi { width:100%; background:transparent; border:none; border-bottom:1px solid ${C.border}; color:${C.text}; font-family:'DM Sans',sans-serif; font-size:14px; padding:10px 0; transition:border-color .2s; outline:none; }
-        .fi:focus { border-bottom-color:${C.sunriseSolid}; }
+        .fi { width:100%; background:${C.surfaceHigh}; border:1px solid rgba(255,72,10,0.35); border-radius:8px; color:${C.text}; font-family:'DM Sans',sans-serif; font-size:14px; padding:10px 12px; transition:border-color .2s, box-shadow .2s; outline:none; box-shadow:0 0 0 1px rgba(255,72,10,0.22), 0 0 8px rgba(255,72,10,0.08); }
+        .fi:focus { border-color:rgba(255,100,20,0.75); box-shadow:0 0 0 1px rgba(255,100,20,0.55), 0 0 14px rgba(255,72,10,0.22); }
         .fi::placeholder { color:${C.textMuted}; }
         .fi option { background:#1C1C1F; }
-        .fi-select { width:100%; background:${C.surfaceHigh}; border:1px solid ${C.border}; border-radius:10px; color:${C.text}; font-family:'DM Sans',sans-serif; font-size:14px; padding:11px 14px; outline:none; appearance:none; -webkit-appearance:none; transition:border-color .2s; cursor:pointer; }
-        .fi-select:focus { border-color:${C.sunriseSolid}; }
+        .fi-select { width:100%; background:${C.surfaceHigh}; border:1px solid rgba(255,72,10,0.35); border-radius:10px; color:${C.text}; font-family:'DM Sans',sans-serif; font-size:14px; padding:11px 14px; outline:none; appearance:none; -webkit-appearance:none; transition:border-color .2s, box-shadow .2s; cursor:pointer; box-shadow:0 0 0 1px rgba(255,72,10,0.22), 0 0 8px rgba(255,72,10,0.08); }
+        .fi-select:focus { border-color:rgba(255,100,20,0.75); box-shadow:0 0 0 1px rgba(255,100,20,0.55), 0 0 14px rgba(255,72,10,0.22); }
         .fi-select option { background:#1C1C1F; }
-        .sp-btn { flex:1; padding:11px 0; border-radius:10px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; border:1px solid ${C.border}; background:${C.surfaceHigh}; color:${C.textSub}; transition:all .18s ease; }
-        .sp-btn.active-dog { border-color:${C.dog}44; background:${C.dog}0D; color:${C.dog}; }
-        .sp-btn.active-cat { border-color:${C.cat}44; background:${C.cat}0D; color:${C.cat}; }
+        .sp-btn { flex:1; padding:11px 0; border-radius:10px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600; border:1px solid rgba(255,72,10,0.3); background:${C.surfaceHigh}; color:${C.textSub}; transition:all .18s ease; box-shadow:0 0 0 1px rgba(255,72,10,0.18), 0 0 8px rgba(255,72,10,0.07); }
+        .sp-btn.active-dog { border-color:${C.dog}44; background:${C.dog}0D; color:${C.dog}; box-shadow:none; }
+        .sp-btn.active-cat { border-color:${C.cat}44; background:${C.cat}0D; color:${C.cat}; box-shadow:none; }
         .stab { flex:1; padding:10px 4px 9px; background:none; border:none; font-family:'DM Sans',sans-serif; font-size:9px; font-weight:600; letter-spacing:.8px; text-transform:uppercase; cursor:pointer; transition:color .15s; line-height:1.5; }
         .input-pill { display:flex; align-items:center; gap:10px; background:${C.surface}; border:1px solid ${C.border}; border-radius:32px; padding:10px 14px 10px 18px; transition:border-color .2s; box-shadow:0 0 0 1px rgba(255,72,10,0.42), 0 0 18px rgba(255,72,10,0.14); }
         .input-pill:focus-within { border-color:#38383E; }
@@ -398,8 +398,8 @@ export default function BeauHome() {
         .ex-card { padding:11px 13px; border-radius:10px; background:${C.surface}; margin-bottom:6px; transition:background .15s; box-shadow:0 0 0 1px rgba(255,72,10,0.35), 0 0 12px rgba(255,72,10,0.10); }
         .ex-card:hover { background:${C.surfaceHigh}; }
         .hint-tag { display:inline-block; padding:3px 9px; background:rgba(255,140,0,.07); border:1px solid rgba(255,140,0,.14); border-radius:20px; font-size:11px; color:#CC8800; margin:3px; font-family:'DM Sans',sans-serif; }
-        .ai-inp { width:100%; background:${C.surfaceHigh}; border:1px solid ${C.border}; border-radius:10px; color:${C.text}; font-family:'DM Sans',sans-serif; font-size:14px; padding:11px 14px; outline:none; margin-bottom:10px; }
-        .ai-inp:focus { border-color:rgba(255,140,0,.4); }
+        .ai-inp { width:100%; background:${C.surfaceHigh}; border:1px solid rgba(255,72,10,0.35); border-radius:10px; color:${C.text}; font-family:'DM Sans',sans-serif; font-size:14px; padding:11px 14px; outline:none; margin-bottom:10px; box-shadow:0 0 0 1px rgba(255,72,10,0.22), 0 0 8px rgba(255,72,10,0.08); transition:border-color .2s, box-shadow .2s; }
+        .ai-inp:focus { border-color:rgba(255,100,20,0.75); box-shadow:0 0 0 1px rgba(255,100,20,0.55), 0 0 14px rgba(255,72,10,0.22); }
         .ai-inp::placeholder { color:${C.textMuted}; }
       `}</style>
 
@@ -541,7 +541,7 @@ export default function BeauHome() {
                       <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:C.textMuted, marginTop:2 }}>{sub}</div>
                     </button>
                   ))}
-                  <textarea value={suggestion} onChange={e => setSuggestion(e.target.value)} placeholder="Type your suggestion..." rows={4} style={{ width:"100%", marginTop:8, padding:"11px 13px", background:C.surfaceHigh, border:`1px solid ${C.border}`, borderRadius:10, color:C.text, fontFamily:"'DM Sans',sans-serif", fontSize:13, resize:"none", lineHeight:"1.6", outline:"none" }} />
+                  <textarea value={suggestion} onChange={e => setSuggestion(e.target.value)} placeholder="Type your suggestion..." rows={4} style={{ width:"100%", marginTop:8, padding:"11px 13px", background:C.surfaceHigh, border:"1px solid rgba(255,72,10,0.35)", borderRadius:10, color:C.text, fontFamily:"'DM Sans',sans-serif", fontSize:13, resize:"none", lineHeight:"1.6", outline:"none", boxShadow:"0 0 0 1px rgba(255,72,10,0.22), 0 0 8px rgba(255,72,10,0.08)" }} />
                   <button onClick={() => { if (suggestion.trim()) setSugDone(true); }} disabled={!suggestion.trim()} style={{ width:"100%", marginTop:8, padding:"11px", background:suggestion.trim() ? C.sunrise : C.surfaceHigh, border:"none", borderRadius:10, color:suggestion.trim() ? "#0C0C0E" : C.textMuted, fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:13, cursor:suggestion.trim() ? "pointer" : "default" }}>Submit →</button>
                 </>
             }
