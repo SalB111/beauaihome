@@ -9,15 +9,16 @@ import WeightCalculator from "./components/WeightCalculator.jsx";
 // across the board, cyan as primary accent on dark. Sunrise gradient kept
 // as action/CTA treatment only.
 const C = {
-  bg:           "#18181C",   // +25% lighter
-  sidebar:      "#1E1E22",   // +25% lighter
-  surface:      "#242428",   // +25% lighter
-  surfaceHigh:  "#2A2A2F",   // +25% lighter
-  border:       "#363639",   // +25% lighter
-  borderSub:    "#2A2A2F",   // +25% lighter
+  bg:           "#141417",   // -10% from #18181C
+  sidebar:      "#1A1A1E",   // -10%
+  surface:      "#1E1E22",   // -10%
+  surfaceHigh:  "#242428",   // -10%
+  border:       "#2E2E32",   // -10%
+  borderSub:    "#242428",   // -10%
   text:         "#F8F8F8",
-  textSub:      "#CECECE",   // brighter secondaries
-  textMuted:    "#909098",   // was #6C6C74 — much more readable
+  textSub:      "#CECECE",
+  textMuted:    "#909098",
+  glow:         "0 0 0 1px rgba(255,72,10,0.45), 0 0 16px rgba(255,72,10,0.18)",  // red-orange ember
   sunrise:      "linear-gradient(135deg, #FF3B3B 0%, #FF8C00 50%, #FFE600 100%)",
   sunriseSolid: "#FF8C00",
   dog:          "#39FF14",
@@ -389,12 +390,12 @@ export default function BeauHome() {
         .sp-btn.active-dog { border-color:${C.dog}44; background:${C.dog}0D; color:${C.dog}; }
         .sp-btn.active-cat { border-color:${C.cat}44; background:${C.cat}0D; color:${C.cat}; }
         .stab { flex:1; padding:10px 4px 9px; background:none; border:none; font-family:'DM Sans',sans-serif; font-size:9px; font-weight:600; letter-spacing:.8px; text-transform:uppercase; cursor:pointer; transition:color .15s; line-height:1.5; }
-        .input-pill { display:flex; align-items:center; gap:10px; background:${C.surface}; border:1px solid ${C.border}; border-radius:32px; padding:10px 14px 10px 18px; transition:border-color .2s; }
+        .input-pill { display:flex; align-items:center; gap:10px; background:${C.surface}; border:1px solid ${C.border}; border-radius:32px; padding:10px 14px 10px 18px; transition:border-color .2s; box-shadow:0 0 0 1px rgba(255,72,10,0.42), 0 0 18px rgba(255,72,10,0.14); }
         .input-pill:focus-within { border-color:#38383E; }
         .send-btn { width:36px; height:36px; border-radius:50%; border:none; display:flex; align-items:center; justify-content:center; font-size:16px; cursor:pointer; flex-shrink:0; transition:all .18s ease; }
         .send-btn.ready { background:${C.sunrise}; color:#0C0C0E; box-shadow:0 0 14px rgba(255,120,0,.35); }
         .send-btn.idle  { background:${C.surfaceHigh}; color:${C.textMuted}; cursor:default; }
-        .ex-card { padding:11px 13px; border-radius:10px; background:${C.surface}; margin-bottom:6px; transition:background .15s; }
+        .ex-card { padding:11px 13px; border-radius:10px; background:${C.surface}; margin-bottom:6px; transition:background .15s; box-shadow:0 0 0 1px rgba(255,72,10,0.35), 0 0 12px rgba(255,72,10,0.10); }
         .ex-card:hover { background:${C.surfaceHigh}; }
         .hint-tag { display:inline-block; padding:3px 9px; background:rgba(255,140,0,.07); border:1px solid rgba(255,140,0,.14); border-radius:20px; font-size:11px; color:#CC8800; margin:3px; font-family:'DM Sans',sans-serif; }
         .ai-inp { width:100%; background:${C.surfaceHigh}; border:1px solid ${C.border}; border-radius:10px; color:${C.text}; font-family:'DM Sans',sans-serif; font-size:14px; padding:11px 14px; outline:none; margin-bottom:10px; }
@@ -405,7 +406,7 @@ export default function BeauHome() {
       {sidebarOpen && <div onClick={() => setSidebarOpen(false)} style={{ position:"fixed", inset:0, zIndex:40, background:"rgba(0,0,0,.6)", backdropFilter:"blur(3px)" }} />}
 
       {/* ── SIDEBAR ── */}
-      <aside style={{ position:"fixed", top:0, bottom:0, left:sidebarOpen ? 0 : -300, width:272, background:C.sidebar, zIndex:50, display:"flex", flexDirection:"column", borderRight:`1px solid ${C.border}`, transition:"left .28s cubic-bezier(.4,0,.2,1)" }}>
+      <aside className="beau-box" style={{ position:"fixed", top:0, bottom:0, left:sidebarOpen ? 0 : -300, width:272, background:C.sidebar, zIndex:50, display:"flex", flexDirection:"column", borderRight:`1px solid ${C.border}`, transition:"left .28s cubic-bezier(.4,0,.2,1)" }}>
         <div style={{ padding:"20px 16px 16px", borderBottom:`1px solid ${C.borderSub}` }}>
           <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
             <BEAUMark size={30} />
@@ -623,7 +624,7 @@ export default function BeauHome() {
                   </div>
                 </div>
 
-                <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:16, padding:"24px", marginBottom:24, marginLeft:42 }}>
+                <div className="beau-box" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:16, padding:"24px", marginBottom:24, marginLeft:42 }}>
                   <div style={{ marginBottom:20 }}>
                     <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:C.textMuted, letterSpacing:"1px", textTransform:"uppercase", marginBottom:10 }}>Species</div>
                     <div style={{ display:"flex", gap:8 }}>
@@ -680,7 +681,7 @@ export default function BeauHome() {
                 {msg.role==="beau" && <BEAUMark size={28} />}
                 <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:msg.role==="user"?"flex-end":"flex-start", maxWidth:"100%" }}>
                   {msg.role==="beau" && <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:C.textMuted, marginBottom:7, letterSpacing:"0.5px" }}>B.E.A.U.</div>}
-                  <div style={{ maxWidth:msg.role==="user"?"72%":"100%", padding:msg.role==="user"?"11px 16px":"0", background:msg.role==="user"?userBg:"transparent", border:msg.role==="user"?`1px solid ${userBdr}`:"none", borderRadius:msg.role==="user"?"18px 18px 4px 18px":0, fontSize:15.5, lineHeight:"1.75", color:C.text, fontFamily:msg.role==="user"?"'DM Sans',sans-serif":"'Lora',serif", wordBreak:"break-word" }}>
+                  <div className={msg.role==="user"?"beau-box":""} style={{ maxWidth:msg.role==="user"?"72%":"100%", padding:msg.role==="user"?"11px 16px":"0", background:msg.role==="user"?userBg:"transparent", border:msg.role==="user"?`1px solid ${userBdr}`:"none", borderRadius:msg.role==="user"?"18px 18px 4px 18px":0, fontSize:15.5, lineHeight:"1.75", color:C.text, fontFamily:msg.role==="user"?"'DM Sans',sans-serif":"'Lora',serif", wordBreak:"break-word" }}>
                     {msg.role==="beau" ? <PlanBlock text={msg.text} /> : <RichText text={msg.text} />}
                   </div>
                 </div>
@@ -746,7 +747,7 @@ export default function BeauHome() {
 
       {showAuth && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100, padding:20, backdropFilter:"blur(6px)" }}>
-          <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:20, padding:"32px 28px", width:"100%", maxWidth:360, position:"relative" }}>
+          <div className="beau-box" style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:20, padding:"32px 28px", width:"100%", maxWidth:360, position:"relative" }}>
             <button onClick={() => setShowAuth(false)} style={{ position:"absolute", top:16, right:16, background:"none", border:"none", color:C.textMuted, cursor:"pointer", fontSize:19 }}>✕</button>
             <div style={{ textAlign:"center", marginBottom:24 }}>
               <div style={{ width:52, height:52, borderRadius:"50%", background:C.sunrise, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px", boxShadow:"0 0 20px rgba(255,120,0,.4)", overflow:"hidden" }}>
