@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import { useBeauListen } from "./hooks/useBeauListen.js";
+import { useBeauVoice } from "./hooks/useBeauVoice.js";
 
 // ── TOKENS ──────────────────────────────────────────────────────────
 // Typography lightened per brand direction: near-white text, lighter weights
@@ -255,8 +257,33 @@ export default function BeauHome() {
   const bottomRef = useRef(null);
   const inputRef  = useRef(null);
 
+  // ── Voice I/O (free Web Speech API — no API keys, no per-call cost) ───
+  // Listen: tap mic → speak → transcript fills the input
+  // Speak: when enabled, B.E.A.U.'s final reply is read aloud after streaming
+  const {
+    supported:  micSupported,
+    listening,
+    transcript,
+    start: startMic,
+    stop:  stopMic,
+    reset: resetMic,
+  } = useBeauListen();
+  const {
+    supported:  voiceSupported,
+    enabled:    voiceOn,
+    speaking,
+    speak,
+    stop: stopSpeak,
+    toggleEnabled: toggleVoice,
+  } = useBeauVoice();
+
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, typing]);
   useEffect(() => { setBreed(""); }, [species]);
+
+  // Live transcript → input field while the user is dictating
+  useEffect(() => {
+    if (listening && transcript) setInput(transcript);
+  }, [listening, transcript]);
 
   function addMsg(m) { setMsgs(p => [...p, { id: Date.now() + Math.random(), ...m }]); }
 
@@ -294,6 +321,9 @@ export default function BeauHome() {
     const full = [...next, { role: "assistant", content: finalReply }];
     setApiMsgs(full);
 
+    // If B.E.A.U.'s voice is enabled, speak the reply after streaming completes
+    if (voiceOn && finalReply) speak(finalReply);
+
     if (finalReply.includes("MORNING ROUTINE") || finalReply.includes("EVENING ROUTINE")) {
       const exs = [];
       finalReply.split("\n").forEach(line => {
@@ -317,6 +347,11 @@ export default function BeauHome() {
   async function handleSend() {
     if (!input.trim() || phase === "intake") return;
     const txt = input.trim();
+    // Cleanly reset voice state on every send: stop dictation, stop B.E.A.U.
+    // mid-sentence if the user is interrupting, clear the transcript buffer.
+    if (listening) stopMic();
+    if (speaking) stopSpeak();
+    resetMic();
     setInput("");
     addMsg({ role: "user", text: txt });
     if (phase === "equip") {
@@ -515,6 +550,37 @@ export default function BeauHome() {
             <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:C.textMuted }}>Home Edition</span>
             {intakeDone && petName && <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, padding:"3px 10px", background:`${accent}12`, color:accent, borderRadius:20, fontWeight:600 }}>{species==="dog"?"🐕":"🐈"} {petName}</span>}
           </div>
+          {/* ── Voice toggle: speaker on/off (read B.E.A.U.'s replies aloud) ── */}
+          {voiceSupported && (
+            <button
+              onClick={toggleVoice}
+              aria-label={voiceOn ? "Mute B.E.A.U. voice" : "Read replies aloud"}
+              title={voiceOn ? "Mute B.E.A.U." : "Read replies aloud"}
+              style={{
+                width:34, height:34, borderRadius:"50%", border:"none",
+                background: voiceOn ? `${C.cat}22` : "transparent",
+                color: voiceOn ? C.cat : C.textMuted,
+                display:"flex", alignItems:"center", justifyContent:"center",
+                cursor:"pointer", marginRight:8,
+                transition:"all .15s",
+                animation: speaking ? "pulse 1.4s ease-in-out infinite" : "none",
+              }}
+            >
+              {voiceOn ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <line x1="23" y1="9" x2="17" y2="15"/>
+                  <line x1="17" y1="9" x2="23" y2="15"/>
+                </svg>
+              )}
+            </button>
+          )}
           {!isSignedIn
             ? <button onClick={() => setShowAuth(true)} style={{ padding:"7px 16px", background:C.sunrise, border:"none", borderRadius:20, color:"#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:12, cursor:"pointer" }}>Sign in</button>
             : <div onClick={() => setSidebarOpen(true)} style={{ width:28, height:28, borderRadius:"50%", background:C.sunrise, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#0C0C0E", cursor:"pointer" }}>{authName[0]?.toUpperCase()||"S"}</div>
@@ -617,7 +683,38 @@ export default function BeauHome() {
         <div style={{ padding:"12px 24px 24px", flexShrink:0 }}>
           <div style={{ maxWidth:720, margin:"0 auto" }}>
             <div className="input-pill">
-              <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();}}} disabled={phase==="intake"} placeholder={phase==="intake"?"Fill in your pet's details above to get started...":phase==="equip"?`Tell B.E.A.U. what you have at home for ${dn}...`:`Ask B.E.A.U. a follow-up about ${dn}...`} style={{ flex:1, background:"none", border:"none", color:C.text, fontFamily:"'DM Sans',sans-serif", fontSize:15, outline:"none", opacity:phase==="intake"?.4:1 }} />
+              {/* ── Tap-to-talk mic — only shown if browser supports SpeechRecognition ── */}
+              {micSupported && (
+                <button
+                  onClick={() => {
+                    if (phase === "intake") return;
+                    if (listening) { stopMic(); }
+                    else { if (speaking) stopSpeak(); startMic(); }
+                  }}
+                  disabled={phase === "intake"}
+                  aria-label={listening ? "Stop dictation" : "Speak to B.E.A.U."}
+                  title={listening ? "Stop" : "Tap and speak"}
+                  style={{
+                    width:36, height:36, borderRadius:"50%", flexShrink:0, border:"none",
+                    background: listening ? "#FF3B3B" : C.surfaceHigh,
+                    color: listening ? "#fff" : C.textSub,
+                    display:"flex", alignItems:"center", justifyContent:"center",
+                    cursor: phase === "intake" ? "default" : "pointer",
+                    opacity: phase === "intake" ? 0.4 : 1,
+                    boxShadow: listening ? "0 0 14px rgba(255,59,59,0.55)" : "none",
+                    animation: listening ? "pulse 1.4s ease-in-out infinite" : "none",
+                    transition: "background-color .15s",
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                    <line x1="12" y1="19" x2="12" y2="23"/>
+                    <line x1="8" y1="23" x2="16" y2="23"/>
+                  </svg>
+                </button>
+              )}
+              <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSend();}}} disabled={phase==="intake"} placeholder={phase==="intake"?"Fill in your pet's details above to get started...":listening?"Listening — speak now…":phase==="equip"?`Tell B.E.A.U. what you have at home for ${dn}...`:`Ask B.E.A.U. a follow-up about ${dn}...`} style={{ flex:1, background:"none", border:"none", color:C.text, fontFamily:"'DM Sans',sans-serif", fontSize:15, outline:"none", opacity:phase==="intake"?.4:1 }} />
               <button className={`send-btn ${input.trim()&&phase!=="intake"?"ready":"idle"}`} onClick={handleSend} disabled={!input.trim()||phase==="intake"}>↑</button>
             </div>
             <div style={{ textAlign:"center", marginTop:8, fontFamily:"'DM Sans',sans-serif", fontSize:10, color:C.textMuted }}>
