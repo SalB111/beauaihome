@@ -25,8 +25,27 @@ const C = {
   cat:          "#00F0FF",
 };
 
-const DOG_BREEDS = ["Mixed Breed","Labrador Retriever","Golden Retriever","German Shepherd","French Bulldog","Bulldog","Poodle","Beagle","Rottweiler","Dachshund","German Shorthaired Pointer","Pembroke Welsh Corgi","Australian Shepherd","Yorkshire Terrier","Cavalier King Charles Spaniel","Doberman Pinscher","Boxer","Miniature Schnauzer","Cane Corso","Shih Tzu","Great Dane","Border Collie","Siberian Husky","Bernese Mountain Dog","Pomeranian","Brittany","English Springer Spaniel","Havanese","Shetland Sheepdog","Weimaraner","Belgian Malinois","Maltese","Boston Terrier","Chihuahua","Basset Hound","Mastiff","Cocker Spaniel","Vizsla","Akita","Rhodesian Ridgeback"];
-const CAT_BREEDS = ["Domestic Shorthair","Domestic Longhair","Domestic Medium Hair","Maine Coon","Persian","Ragdoll","Siamese","Bengal","Abyssinian","Russian Blue","Sphynx","Scottish Fold","British Shorthair","Burmese","American Shorthair","Norwegian Forest Cat","Birman","Oriental Shorthair","Devon Rex","Cornish Rex","Tonkinese","Himalayan","Turkish Angora","Manx","Exotic Shorthair","Savannah","Balinese","Chartreux","Egyptian Mau","Somali"];
+const DOG_BREEDS = [
+  "Akita","Australian Shepherd","Basset Hound","Beagle","Belgian Malinois",
+  "Bernese Mountain Dog","Border Collie","Boston Terrier","Boxer","Brittany",
+  "Bulldog","Cane Corso","Cavalier King Charles Spaniel","Chihuahua",
+  "Cocker Spaniel","Dachshund","Doberman Pinscher","English Springer Spaniel",
+  "French Bulldog","German Shepherd","German Shorthaired Pointer","Golden Retriever",
+  "Great Dane","Havanese","Labrador Retriever","Maltese","Mastiff",
+  "Miniature Australian Shepherd","Miniature Dachshund","Miniature Pinscher",
+  "Miniature Poodle","Miniature Schnauzer","Mixed Breed","Pembroke Welsh Corgi",
+  "Pomeranian","Poodle","Rhodesian Ridgeback","Rottweiler","Shetland Sheepdog",
+  "Shih Tzu","Siberian Husky","Toy Fox Terrier","Toy Poodle","Vizsla","Weimaraner",
+  "Yorkshire Terrier",
+];
+const CAT_BREEDS = [
+  "Abyssinian","American Shorthair","Balinese","Bengal","Birman",
+  "British Shorthair","Burmese","Chartreux","Cornish Rex","Devon Rex",
+  "Domestic Longhair","Domestic Medium Hair","Domestic Shorthair","Egyptian Mau",
+  "Exotic Shorthair","Himalayan","Maine Coon","Manx","Norwegian Forest Cat",
+  "Oriental Shorthair","Persian","Ragdoll","Russian Blue","Savannah",
+  "Scottish Fold","Siamese","Somali","Sphynx","Tonkinese","Turkish Angora",
+];
 const CONDITIONS = ["Post-surgery (TPLO / CCL repair)","Arthritis / Osteoarthritis","Hip dysplasia","IVDD / Back / Disc issue","Limping / Lameness","Weight management","Neurological issue","Fracture recovery","Post-FHO surgery","Geriatric wellness","Sports conditioning","General fitness","Patella luxation","Elbow dysplasia","Other"];
 
 // ── SYSTEM PROMPT ────────────────────────────────────────────────────
