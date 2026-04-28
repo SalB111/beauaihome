@@ -3,6 +3,7 @@ import { useBeauListen } from "./hooks/useBeauListen.js";
 import { useBeauVoice } from "./hooks/useBeauVoice.js";
 import AnatomyViewer3D from "./components/AnatomyViewer3D.jsx";
 import WeightCalculator from "./components/WeightCalculator.jsx";
+import { track } from "./lib/analytics.js";
 
 // ── TOKENS ──────────────────────────────────────────────────────────
 // Typography lightened per brand direction: near-white text, lighter weights
@@ -352,12 +353,23 @@ export default function BeauHome() {
         const m = line.match(/^\*\*\d+\.\s(.+?)\*\*/);
         if (m) exs.push({ id: Date.now() + Math.random(), name: m[1].split("|")[0].trim(), env: line.includes("🌿") ? "🌿 Outdoor" : "🏠 Indoor", tag: condition.split(" ")[0] || "Rehab" });
       });
-      if (exs.length) setExercises(exs);
+      if (exs.length) {
+        setExercises(exs);
+        track("plan_generated", { exercise_count: exs.length, species, condition });
+      }
     }
   }
 
   async function handleStart() {
     if (!petName.trim() || !condition) return;
+    track("intake_completed", {
+      species,
+      condition,
+      has_breed: !!breed,
+      has_age: !!age,
+      has_weight: !!weight,
+      has_detail: !!conditionDetail.trim(),
+    });
     setIntakeDone(true);
     setPhase("equip");
     addMsg({ role: "user", text: `${species === "dog" ? "🐕" : "🐈"} **${petName}** · ${breed || "Mixed"} · ${age ? age+"yr" : "?"} · ${weight ? weight+"lbs" : "?"}\n${condition}${conditionDetail ? " — " + conditionDetail : ""}` });
@@ -369,6 +381,7 @@ export default function BeauHome() {
   async function handleSend() {
     if (!input.trim() || phase === "intake") return;
     const txt = input.trim();
+    track("chat_message_sent", { phase, char_count: txt.length });
     // Cleanly reset voice state on every send: stop dictation, stop B.E.A.U.
     // mid-sentence if the user is interrupting, clear the transcript buffer.
     if (listening) stopMic();
@@ -446,7 +459,7 @@ export default function BeauHome() {
 
         <div style={{ display:"flex", borderBottom:`1px solid ${C.borderSub}` }}>
           {[{id:"exercises",icon:"💪",label:"Plan"},{id:"progress",icon:"📈",label:"Progress"},{id:"anatomy",icon:"🩻",label:"3D"},{id:"weight",icon:"⚖️",label:"Weight"},{id:"guide",icon:"❓",label:"Guide"},{id:"suggest",icon:"💡",label:"Suggest"}].map(t => (
-            <button key={t.id} className="stab" onClick={() => setSidebarTab(t.id)} style={{ color:sidebarTab===t.id ? accent : C.textMuted, borderBottom:sidebarTab===t.id ? `2px solid ${accent}` : "2px solid transparent" }}>
+            <button key={t.id} className="stab" onClick={() => { track("sidebar_tab_opened", { tab: t.id }); setSidebarTab(t.id); }} style={{ color:sidebarTab===t.id ? accent : C.textMuted, borderBottom:sidebarTab===t.id ? `2px solid ${accent}` : "2px solid transparent" }}>
               <div style={{ fontSize:14, marginBottom:3 }}>{t.icon}</div>{t.label}
             </button>
           ))}
@@ -470,7 +483,7 @@ export default function BeauHome() {
                 </div>
               ))
             }
-            <button onClick={() => { if (!isSignedIn) { setShowAuth(true); return; } setPlanSaved(true); }} style={{ width:"100%", marginTop:10, padding:"11px", background:planSaved ? `${C.dog}14` : C.sunrise, border:planSaved ? `1px solid ${C.dog}44` : "none", borderRadius:10, color:planSaved ? C.dog : "#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:13, cursor:"pointer" }}>
+            <button onClick={() => { if (!isSignedIn) { setShowAuth(true); return; } track("plan_saved", { exercise_count: exercises.length }); setPlanSaved(true); }} style={{ width:"100%", marginTop:10, padding:"11px", background:planSaved ? `${C.dog}14` : C.sunrise, border:planSaved ? `1px solid ${C.dog}44` : "none", borderRadius:10, color:planSaved ? C.dog : "#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:13, cursor:"pointer" }}>
               {planSaved ? "✓ Saved" : "💾 Save Today's Plan"}
             </button>
           </>}
@@ -561,7 +574,7 @@ export default function BeauHome() {
                     </button>
                   ))}
                   <textarea value={suggestion} onChange={e => setSuggestion(e.target.value)} placeholder="Type your suggestion..." rows={4} style={{ width:"100%", marginTop:8, padding:"11px 13px", background:C.surfaceHigh, border:"1px solid rgba(255,72,10,0.35)", borderRadius:10, color:C.text, fontFamily:"'DM Sans',sans-serif", fontSize:13, resize:"none", lineHeight:"1.6", outline:"none", boxShadow:"0 0 0 1px rgba(255,72,10,0.22), 0 0 8px rgba(255,72,10,0.08)" }} />
-                  <button onClick={() => { if (suggestion.trim()) setSugDone(true); }} disabled={!suggestion.trim()} style={{ width:"100%", marginTop:8, padding:"11px", background:suggestion.trim() ? C.sunrise : C.surfaceHigh, border:"none", borderRadius:10, color:suggestion.trim() ? "#0C0C0E" : C.textMuted, fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:13, cursor:suggestion.trim() ? "pointer" : "default" }}>Submit →</button>
+                  <button onClick={() => { if (suggestion.trim()) { track("suggestion_submitted", { char_count: suggestion.trim().length }); setSugDone(true); } }} disabled={!suggestion.trim()} style={{ width:"100%", marginTop:8, padding:"11px", background:suggestion.trim() ? C.sunrise : C.surfaceHigh, border:"none", borderRadius:10, color:suggestion.trim() ? "#0C0C0E" : C.textMuted, fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:13, cursor:suggestion.trim() ? "pointer" : "default" }}>Submit →</button>
                 </>
             }
           </>}
@@ -592,7 +605,7 @@ export default function BeauHome() {
           {/* ── Voice toggle: speaker on/off (read B.E.A.U.'s replies aloud) ── */}
           {voiceSupported && (
             <button
-              onClick={toggleVoice}
+              onClick={() => { track("voice_output_toggled", { enabled: !voiceOn }); toggleVoice(); }}
               aria-label={voiceOn ? "Mute B.E.A.U. voice" : "Read replies aloud"}
               title={voiceOn ? "Mute B.E.A.U." : "Read replies aloud"}
               style={{
@@ -729,7 +742,7 @@ export default function BeauHome() {
                   onClick={() => {
                     if (phase === "intake") return;
                     if (listening) { stopMic(); }
-                    else { if (speaking) stopSpeak(); startMic(); }
+                    else { track("voice_input_started"); if (speaking) stopSpeak(); startMic(); }
                   }}
                   disabled={phase === "intake"}
                   aria-label={listening ? "Stop dictation" : "Speak to B.E.A.U."}
@@ -778,7 +791,7 @@ export default function BeauHome() {
             {authMode==="signup" && <input className="ai-inp" placeholder="Your name" value={authName} onChange={e => setAuthName(e.target.value)} />}
             <input className="ai-inp" type="email" placeholder="Email address" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
             <input className="ai-inp" type="password" placeholder="Password" value={authPass} onChange={e => setAuthPass(e.target.value)} style={{ marginBottom:18 }} />
-            <button onClick={() => { setIsSignedIn(true); if(!authName) setAuthName("Sal"); setShowAuth(false); }} style={{ width:"100%", padding:"13px", background:C.sunrise, border:"none", borderRadius:12, color:"#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer", marginBottom:14 }}>
+            <button onClick={() => { track("auth_signed_in", { mode: authMode }); setIsSignedIn(true); if(!authName) setAuthName("Sal"); setShowAuth(false); }} style={{ width:"100%", padding:"13px", background:C.sunrise, border:"none", borderRadius:12, color:"#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer", marginBottom:14 }}>
               {authMode==="signin"?"Sign In":"Create Account"}
             </button>
             <div style={{ textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:13, color:C.textSub }}>
