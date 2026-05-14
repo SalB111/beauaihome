@@ -277,6 +277,28 @@ export default function BeauHome() {
   const [suggestion,setSuggestion]= useState("");
   const [sugDone,   setSugDone]   = useState(false);
 
+  const [anatomyFull, setAnatomyFull] = useState(false);
+  const [vpSize, setVpSize] = useState(() => ({
+    w: typeof window !== "undefined" ? window.innerWidth : 1024,
+    h: typeof window !== "undefined" ? window.innerHeight : 768,
+  }));
+
+  // Track viewport size so the 3D viewer can re-mount at the right dimensions
+  // when the overlay is open. Header strip in the overlay is 52px tall.
+  useEffect(() => {
+    const onResize = () => setVpSize({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  // ESC closes the full-screen 3D overlay
+  useEffect(() => {
+    if (!anatomyFull) return;
+    const onKey = (e) => { if (e.key === "Escape") setAnatomyFull(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [anatomyFull]);
+
   const bottomRef = useRef(null);
   const inputRef  = useRef(null);
 
@@ -520,9 +542,14 @@ export default function BeauHome() {
             <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:12, color:C.textSub, lineHeight:1.7, marginBottom:14 }}>
               Rotate, zoom, and explore the {species === "cat" ? "feline" : "canine"} skeleton. Useful for understanding which joints and structures B.E.A.U. is targeting in {petName ? `${petName}'s` : "your pet's"} plan.
             </div>
-            <AnatomyViewer3D species={species} height={340} />
+            <button
+              onClick={() => { track("anatomy_fullscreen_opened", { species }); setSidebarOpen(false); setAnatomyFull(true); }}
+              style={{ width:"100%", padding:"14px 16px", background:`${C.cat}14`, border:`1px solid ${C.cat}44`, borderRadius:12, color:C.cat, fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:14, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}
+            >
+              🩻 Open full-screen viewer →
+            </button>
             <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:10, color:C.textMuted, lineHeight:1.6, marginTop:10, padding:"10px 12px", background:"rgba(0,240,255,0.04)", borderRadius:8 }}>
-              💡 <strong style={{color:C.cat}}>Tip:</strong> drag with one finger to rotate, pinch with two to zoom. The model is hosted by veterinary anatomy educators — what you see is anatomically accurate.
+              💡 <strong style={{color:C.cat}}>Tip:</strong> opens the full canvas so you can actually see the anatomy. Drag to rotate, scroll/pinch to zoom, hover to inspect. Press <kbd style={{ padding:"1px 5px", background:C.surfaceHigh, border:`1px solid ${C.border}`, borderRadius:4, fontSize:10 }}>Esc</kbd> to close.
             </div>
           </>}
 
@@ -776,6 +803,73 @@ export default function BeauHome() {
           </div>
         </div>
       </div>
+
+      {anatomyFull && (
+        <div style={{ position:"fixed", inset:0, zIndex:90, background:C.bg, display:"flex" }} role="dialog" aria-modal="true" aria-label="3D anatomy viewer">
+          {/* Thin nav rail */}
+          <nav style={{ width:56, background:C.sidebar, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", alignItems:"center", padding:"12px 0", gap:4, flexShrink:0 }}>
+            {[{id:"exercises",icon:"💪",label:"Plan"},{id:"progress",icon:"📈",label:"Progress"},{id:"anatomy",icon:"🩻",label:"3D"},{id:"weight",icon:"⚖️",label:"Weight"},{id:"guide",icon:"❓",label:"Guide"},{id:"suggest",icon:"💡",label:"Suggest"}].map(t => {
+              const active = t.id === "anatomy";
+              return (
+                <button
+                  key={t.id}
+                  onClick={() => {
+                    if (active) return;
+                    setAnatomyFull(false);
+                    setSidebarTab(t.id);
+                    setSidebarOpen(true);
+                    track("sidebar_tab_opened", { tab: t.id, from: "anatomy_fullscreen" });
+                  }}
+                  title={t.label}
+                  aria-label={t.label}
+                  style={{
+                    width:40, height:40, borderRadius:10, border:"none", cursor:"pointer",
+                    display:"flex", alignItems:"center", justifyContent:"center", fontSize:18,
+                    background: active ? `${C.cat}1f` : "transparent",
+                    color: active ? C.cat : C.textMuted,
+                    transition:"background-color .15s, color .15s",
+                  }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = C.surfaceHigh; }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent"; }}
+                >
+                  {t.icon}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Viewer column */}
+          <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0 }}>
+            <header style={{ height:52, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 20px", borderBottom:`1px solid ${C.borderSub}`, flexShrink:0 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <span style={{ fontFamily:"'Lora',serif", fontSize:16, fontWeight:600 }}>
+                  {petName ? `${petName}'s Anatomy` : "3D Anatomy Viewer"}
+                </span>
+                <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, padding:"3px 10px", background:`${accent}14`, color:accent, borderRadius:20, fontWeight:600 }}>
+                  {species === "dog" ? "🐕 Canine" : "🐈 Feline"}
+                </span>
+              </div>
+              <button
+                onClick={() => setAnatomyFull(false)}
+                aria-label="Close full-screen viewer (Esc)"
+                title="Close (Esc)"
+                style={{ width:36, height:36, borderRadius:10, border:`1px solid ${C.border}`, background:C.surfaceHigh, color:C.textSub, cursor:"pointer", fontSize:16, display:"flex", alignItems:"center", justifyContent:"center" }}
+              >
+                ✕
+              </button>
+            </header>
+            <div style={{ flex:1, minHeight:0, position:"relative", overflow:"hidden" }}>
+              {/* `key` forces a clean remount when viewport size changes so Three.js
+                  re-creates the renderer at the new dimensions. */}
+              <AnatomyViewer3D
+                key={`${species}-${vpSize.w}-${vpSize.h}`}
+                species={species}
+                height={Math.max(320, vpSize.h - 120)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {showAuth && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:100, padding:20, backdropFilter:"blur(6px)" }}>
