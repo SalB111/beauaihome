@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useBeauListen } from "./hooks/useBeauListen.js";
 import { useBeauVoice } from "./hooks/useBeauVoice.js";
+import { useSession } from "./hooks/useSession.js";
 import AnatomyViewer3D from "./components/AnatomyViewer3D.jsx";
 import WeightCalculator from "./components/WeightCalculator.jsx";
 import { track } from "./lib/analytics.js";
@@ -248,7 +249,58 @@ export default function BeauHome() {
   const [authName, setAuthName]       = useState("");
   const [authEmail, setAuthEmail]     = useState("");
   const [authPass, setAuthPass]       = useState("");
-  const [isSignedIn, setIsSignedIn]   = useState(false);
+  const [authBusy, setAuthBusy]       = useState(false);
+  const [authNotice, setAuthNotice]   = useState(""); // success / "check email" copy
+
+  // ── Real Supabase auth ────────────────────────────────────────────
+  const { user, error: authError, signUp, signIn, signOut, clearError } = useSession();
+  const isSignedIn = !!user;
+  const displayName =
+    user?.user_metadata?.name ||
+    (user?.email ? user.email.split("@")[0] : "") ||
+    "";
+
+  async function handleAuthSubmit() {
+    if (!authEmail.trim() || !authPass) return;
+    setAuthBusy(true);
+    setAuthNotice("");
+    try {
+      if (authMode === "signup") {
+        const { success, needsConfirm } = await signUp({
+          email: authEmail.trim(),
+          password: authPass,
+          name: authName.trim(),
+        });
+        if (success) {
+          track("auth_signed_up", { needs_confirm: needsConfirm });
+          if (needsConfirm) {
+            setAuthNotice("Check your email for a confirmation link to finish signing up.");
+            setAuthPass("");
+          } else {
+            setShowAuth(false);
+            setAuthPass("");
+          }
+        }
+      } else {
+        const { success } = await signIn({
+          email: authEmail.trim(),
+          password: authPass,
+        });
+        if (success) {
+          track("auth_signed_in", { mode: "signin" });
+          setShowAuth(false);
+          setAuthPass("");
+        }
+      }
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function handleSignOut() {
+    await signOut();
+    track("auth_signed_out");
+  }
 
   const [petName,         setPetName]         = useState("");
   const [species,         setSpecies]         = useState("dog");
@@ -610,9 +662,9 @@ export default function BeauHome() {
         <div style={{ padding:"12px 14px", borderTop:`1px solid ${C.borderSub}` }}>
           {isSignedIn
             ? <div style={{ display:"flex", alignItems:"center", gap:9 }}>
-                <div style={{ width:28, height:28, borderRadius:"50%", background:C.sunrise, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#0C0C0E", flexShrink:0 }}>{authName[0]?.toUpperCase()||"S"}</div>
-                <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:500, flex:1 }}>{authName}</span>
-                <button onClick={() => setIsSignedIn(false)} style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:C.textMuted, background:"none", border:"none", cursor:"pointer" }}>Sign out</button>
+                <div style={{ width:28, height:28, borderRadius:"50%", background:C.sunrise, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#0C0C0E", flexShrink:0 }}>{displayName[0]?.toUpperCase()||"S"}</div>
+                <span style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:500, flex:1 }}>{displayName}</span>
+                <button onClick={handleSignOut} style={{ fontFamily:"'DM Sans',sans-serif", fontSize:11, color:C.textMuted, background:"none", border:"none", cursor:"pointer" }}>Sign out</button>
               </div>
             : <button onClick={() => setShowAuth(true)} style={{ width:"100%", padding:"10px", background:C.surfaceHigh, border:`1px solid ${C.border}`, borderRadius:10, color:C.text, fontFamily:"'DM Sans',sans-serif", fontSize:13, fontWeight:500, cursor:"pointer" }}>Sign in / Create account →</button>
           }
@@ -663,7 +715,7 @@ export default function BeauHome() {
           )}
           {!isSignedIn
             ? <button onClick={() => setShowAuth(true)} style={{ padding:"7px 16px", background:C.sunrise, border:"none", borderRadius:20, color:"#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:12, cursor:"pointer" }}>Sign in</button>
-            : <div onClick={() => setSidebarOpen(true)} style={{ width:28, height:28, borderRadius:"50%", background:C.sunrise, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#0C0C0E", cursor:"pointer" }}>{authName[0]?.toUpperCase()||"S"}</div>
+            : <div onClick={() => setSidebarOpen(true)} style={{ width:28, height:28, borderRadius:"50%", background:C.sunrise, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:"#0C0C0E", cursor:"pointer" }}>{displayName[0]?.toUpperCase()||"S"}</div>
           }
         </nav>
 
@@ -883,14 +935,24 @@ export default function BeauHome() {
               <div style={{ fontFamily:"'DM Sans',sans-serif", fontSize:13, color:C.textSub }}>{authMode==="signin"?"Sign in to save plans and track progress":"Save exercises and track your pet's progress"}</div>
             </div>
             {authMode==="signup" && <input className="ai-inp" placeholder="Your name" value={authName} onChange={e => setAuthName(e.target.value)} />}
-            <input className="ai-inp" type="email" placeholder="Email address" value={authEmail} onChange={e => setAuthEmail(e.target.value)} />
-            <input className="ai-inp" type="password" placeholder="Password" value={authPass} onChange={e => setAuthPass(e.target.value)} style={{ marginBottom:18 }} />
-            <button onClick={() => { track("auth_signed_in", { mode: authMode }); setIsSignedIn(true); if(!authName) setAuthName("Sal"); setShowAuth(false); }} style={{ width:"100%", padding:"13px", background:C.sunrise, border:"none", borderRadius:12, color:"#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:15, cursor:"pointer", marginBottom:14 }}>
-              {authMode==="signin"?"Sign In":"Create Account"}
+            <input className="ai-inp" type="email" placeholder="Email address" value={authEmail} onChange={e => { clearError(); setAuthEmail(e.target.value); }} onKeyDown={e => { if (e.key==="Enter") handleAuthSubmit(); }} />
+            <input className="ai-inp" type="password" placeholder="Password" value={authPass} onChange={e => { clearError(); setAuthPass(e.target.value); }} onKeyDown={e => { if (e.key==="Enter") handleAuthSubmit(); }} style={{ marginBottom:authError||authNotice?10:18 }} />
+            {authError && (
+              <div role="alert" style={{ marginBottom:14, padding:"10px 12px", background:"rgba(255,72,72,0.08)", border:"1px solid rgba(255,72,72,0.35)", borderRadius:10, color:"#FFB4B4", fontFamily:"'DM Sans',sans-serif", fontSize:12, lineHeight:1.55 }}>
+                {authError}
+              </div>
+            )}
+            {authNotice && !authError && (
+              <div role="status" style={{ marginBottom:14, padding:"10px 12px", background:`${C.cat}14`, border:`1px solid ${C.cat}44`, borderRadius:10, color:C.cat, fontFamily:"'DM Sans',sans-serif", fontSize:12, lineHeight:1.55 }}>
+                {authNotice}
+              </div>
+            )}
+            <button onClick={handleAuthSubmit} disabled={authBusy || !authEmail.trim() || !authPass} style={{ width:"100%", padding:"13px", background: (authBusy || !authEmail.trim() || !authPass) ? C.surfaceHigh : C.sunrise, border:"none", borderRadius:12, color: (authBusy || !authEmail.trim() || !authPass) ? C.textMuted : "#0C0C0E", fontFamily:"'DM Sans',sans-serif", fontWeight:700, fontSize:15, cursor: authBusy ? "default" : "pointer", marginBottom:14 }}>
+              {authBusy ? "Working..." : authMode==="signin" ? "Sign In" : "Create Account"}
             </button>
             <div style={{ textAlign:"center", fontFamily:"'DM Sans',sans-serif", fontSize:13, color:C.textSub }}>
               {authMode==="signin"?"Don't have an account? ":"Already have an account? "}
-              <span onClick={() => setAuthMode(authMode==="signin"?"signup":"signin")} style={{ color:C.sunriseSolid, cursor:"pointer", fontWeight:600 }}>{authMode==="signin"?"Sign up free":"Sign in"}</span>
+              <span onClick={() => { clearError(); setAuthNotice(""); setAuthMode(authMode==="signin"?"signup":"signin"); }} style={{ color:C.sunriseSolid, cursor:"pointer", fontWeight:600 }}>{authMode==="signin"?"Sign up free":"Sign in"}</span>
             </div>
             <div style={{ marginTop:18, fontFamily:"'DM Sans',sans-serif", fontSize:10, color:C.textMuted, textAlign:"center", lineHeight:"1.7" }}>
               B.E.A.U. Home provides general exercise guidance only. Not a substitute for veterinary care.
